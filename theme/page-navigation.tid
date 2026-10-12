@@ -1,0 +1,30 @@
+title: $:/rmd/page-navigation.js
+type: application/javascript
+module-type: startup
+
+/* Follow native story history after rendering, rather than carrying the old
+   page's viewport position into the single-page zoom view. */
+exports.name = "rmd-page-navigation";
+exports.platforms = ["browser"];
+exports.after = ["startup"];
+exports.synchronous = true;
+exports.startup = function () {
+  // The wiki handles page navigation itself; browser history must not restore
+  // a viewport offset from the page that previously occupied this document.
+  if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+  var lastTitle, pendingFrame;
+  function pageChanged() {
+    var history = $tw.wiki.getTiddlerDataCached("$:/HistoryList", []);
+    var title = history.length && history[history.length - 1].title;
+    if (!title || title === lastTitle) return;
+    lastTitle = title;
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    // Let the new story view finish layout before moving the viewport.
+    pendingFrame = window.requestAnimationFrame(function () {
+      pendingFrame = null;
+      window.scrollTo({top: 0, left: window.scrollX, behavior: "instant"});
+    });
+  }
+  $tw.hooks.addHook("th-page-refreshed", pageChanged);
+  pageChanged();
+};
