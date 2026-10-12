@@ -1,0 +1,15 @@
+title: $:/core/ui/PageTemplate/sidebar
+tags: $:/tags/PageTemplate
+type: text/vnd.tiddlywiki
+
+<$reveal state="$:/state/sidebar" type="nomatch" text="no" tag="aside" class="rmd-sidebar" id="rmd-sidebar" aria-label="Wiki navigation">
+<div class="rmd-sidebar-scroll">
+<div class="rmd-sidebar-intro"><span class="rmd-eyebrow">THE KNOWLEDGE ARCHIVE</span><$link to="ReMoDDeD Wiki" class="rmd-sidebar-title">ReMoDDeD Wiki</$link><p>Your field guide to Sanctuary.</p></div>
+<div class="rmd-search" role="search" aria-label="Search the wiki">{{$:/plugins/rudi/tweakcat/plugins/advancedSearch/search}}</div>
+<nav class="rmd-library" aria-label="Reference library">{{$:/rmd/navigation}}</nav>
+<details class="rmd-open-pages"><summary>Open pages</summary>{{$:/core/ui/SideBar/Open}}</details>
+<details class="rmd-editor-tools"><summary>Wiki tools</summary><div class="rmd-page-controls"><$transclude tiddler="$:/core/ui/PageTemplate/pagecontrols"/></div><div class="vp-font-controls" data-vp-font-controls><span>Text size</span><button class="vp-font-btn" data-vp-font-step="-0.1" type="button" aria-label="Decrease font size">−</button><button class="vp-font-btn" data-vp-font-step="0.1" type="button" aria-label="Increase font size">+</button></div><$checkbox tiddler="$:/config/codemirror/lineNumbers" field="text" checked="true" unchecked="false">Editor line numbers</$checkbox><br/><$checkbox tiddler="$:/config/codemirror/lineWrapping" field="text" checked="true" unchecked="false">Editor line wrapping</$checkbox></details>
+<div class="rmd-sidebar-footer"><span class="rmd-eyebrow">JOIN THE COMMUNITY</span><div><a href="https://discord.gg/pqUWcDcjWF" target="_blank" rel="noopener noreferrer">Discord ↗</a><a href="https://www.youtube.com/@BonesyD2R" target="_blank" rel="noopener noreferrer">YouTube ↗</a><a href="https://www.patreon.com/bonesyd2r" target="_blank" rel="noopener noreferrer">Patreon ↗</a></div><small>An independent fan project.<br/>Not affiliated with Blizzard Entertainment.</small></div>
+</div>
+</$reveal>
+<$reveal state="$:/state/sidebar" type="nomatch" text="no"><$button set="$:/state/sidebar" setTo="no" class="rmd-nav-backdrop" aria-label="Close wiki navigation"><span>Close navigation</span></$button></$reveal>

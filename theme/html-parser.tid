@@ -1,0 +1,32 @@
+title: $:/core/modules/parsers/htmlparser.js
+type: application/javascript
+module-type: parser
+
+/* TiddlyWiki's HTML iframe parser, with a theme for the existing item libraries.
+   Article HTML, item data, scripts, and sandbox configuration remain intact. */
+(function () {
+  "use strict";
+  var HtmlParser = function (type, text, options) {
+    var src;
+    if (options._canonical_uri) {
+      src = options._canonical_uri;
+    } else if (text) {
+      var isLibrary = /class=["'][^"']*\b(?:dt-panel|rw-panel|si-panel)\b/.test(text);
+      if (isLibrary) {
+        text += '<style data-rmd-embedded-theme>' +
+          $tw.wiki.getTiddlerText("$:/rmd/fonts", "") + "\n" +
+          $tw.wiki.getTiddlerText("$:/rmd/embedded.css", "") + '</style><script>' +
+          $tw.wiki.getTiddlerText("$:/rmd/embedded.js", "") + '</script>';
+      }
+      // Base64 avoids percent-encoding overhead in the largest archives.
+      // Keep data-URI isolation rather than granting srcdoc parent-origin access.
+      src = isLibrary ? "data:text/html;charset=utf-8;base64," + $tw.utils.base64Encode(text) :
+        "data:text/html;charset=utf-8," + encodeURIComponent(text);
+    }
+    this.tree = [{type: "element", tag: "iframe", attributes: {src: {type: "string", value: src}}}];
+    if ($tw.wiki.getTiddlerText("$:/config/HtmlParser/DisableSandbox", "no") !== "yes") {
+      this.tree[0].attributes.sandbox = {type: "string", value: $tw.wiki.getTiddlerText("$:/config/HtmlParser/SandboxTokens", "")};
+    }
+  };
+  exports["text/html"] = HtmlParser;
+})();

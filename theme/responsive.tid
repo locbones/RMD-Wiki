@@ -1,0 +1,43 @@
+title: $:/rmd/responsive.js
+type: application/javascript
+module-type: startup
+
+/* Native TiddlyWiki startup module; menu state remains editable by widgets. */
+exports.name = "rmd-responsive-navigation";
+exports.platforms = ["browser"];
+exports.after = ["startup"];
+exports.synchronous = true;
+exports.startup = function () {
+  var mobile = window.matchMedia("(max-width: 900px)");
+  var focusMenu = false;
+  function setSidebar(visible) {
+    $tw.wiki.addTiddler({title: "$:/state/sidebar", text: visible ? "yes" : "no"});
+  }
+  function updateMenuAccessibility() {
+    document.body.classList.toggle("rmd-drawer-open", mobile.matches && $tw.wiki.getTiddlerText("$:/state/sidebar") !== "no");
+    var button = document.querySelector(".rmd-menu-toggle");
+    if (button) {
+      button.setAttribute("aria-expanded", $tw.wiki.getTiddlerText("$:/state/sidebar") === "no" ? "false" : "true");
+      button.setAttribute("aria-controls", "rmd-sidebar");
+      if (focusMenu) { button.focus(); focusMenu = false; }
+    }
+  }
+  $tw.hooks.addHook("th-page-refreshed", updateMenuAccessibility);
+  if (mobile.matches) setSidebar(false);
+  function breakpointChanged(event) { setSidebar(!event.matches); }
+  if (mobile.addEventListener) mobile.addEventListener("change", breakpointChanged);
+  else mobile.addListener(breakpointChanged);
+  // Capture before TiddlyWiki's button widget stops click propagation.
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".rmd-nav-backdrop")) focusMenu = true;
+  }, true);
+  document.addEventListener("click", function (event) {
+    if (mobile.matches && event.target.closest(".rmd-sidebar a.tc-tiddlylink")) setSidebar(false);
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && mobile.matches && $tw.wiki.getTiddlerText("$:/state/sidebar") !== "no") {
+      focusMenu = true;
+      setSidebar(false);
+    }
+  });
+};

@@ -1,0 +1,26 @@
+title: ReMoDDeD Wiki
+type: text/vnd.tiddlywiki
+tags: Wiki
+
+<div class="rmd-home">
+<section class="rmd-hero" aria-label="Welcome to the ReMoDDeD wiki">
+<$image source="$:/rmd/assets/infernal-forge" class="rmd-hero-art" alt=""/>
+<div class="rmd-hero-copy"><span class="rmd-eyebrow">THE REMODDED KNOWLEDGE ARCHIVE</span><h1>Diablo II.<br/><em>ReMoDDeD.</em></h1><p>Go deeper into Sanctuary. Explore new systems, discover your next build, and master an expanded world of items, skills, and endgame challenges.</p><div class="rmd-actions"><$link to="Install Guide" class="rmd-button rmd-button-primary">INSTALLATION GUIDE <span>→</span></$link><$link to="ReMoDDeD Overview" class="rmd-button">EXPLORE THE MOD <span>↗</span></$link></div></div>
+<span class="rmd-hero-caption">REIMAGINE THE HUNT</span>
+</section>
+<section class="rmd-home-section">
+<div class="rmd-section-heading"><div><span class="rmd-eyebrow">YOUR JOURNEY STARTS HERE</span><h2>Knowledge is your greatest weapon.</h2><p>Learn the systems. Find your build. Make Sanctuary your own.</p></div></div>
+<div class="rmd-cards">
+<$link to="Beginner's Info" class="rmd-card"><span class="rmd-card-number">Ⅰ</span><span class="rmd-eyebrow">NEW TO REMODDED</span><h3>Begin your journey.</h3><p>Installation, first steps, and answers to the questions every new adventurer asks.</p><span class="rmd-card-bottom">GETTING STARTED <span>↗</span></span></$link>
+<$link to="Special Mod Mechanics" class="rmd-card"><span class="rmd-card-number">Ⅱ</span><span class="rmd-eyebrow">REMODDED SYSTEMS</span><h3>New ways to build.</h3><p>Explore the mechanics that reshape your character and change how you play.</p><span class="rmd-card-bottom">DISCOVER THE SYSTEMS <span>↗</span></span></$link>
+<$link to="Unique Items" class="rmd-card"><span class="rmd-card-number">Ⅲ</span><span class="rmd-eyebrow">THE ITEM ARCHIVE</span><h3>A different kind of loot.</h3><p>Find unique items, powerful sets, runewords, and new possibilities for your next build.</p><span class="rmd-card-bottom">EXPLORE THE ITEMS <span>↗</span></span></$link>
+</div>
+</section>
+<section class="rmd-home-section rmd-reference-section"><div class="rmd-section-heading"><div><span class="rmd-eyebrow">KEEP EXPLORING</span><h2>Every discovery opens a new path.</h2></div><$link to="Patch Notes Beta" class="rmd-text-link">PATCH NOTES ↗</$link></div><div class="rmd-reference-links">
+<$link to="Runewords"><span>01</span><div><h3>Runewords &amp; forging</h3><p>Shape the equipment behind your build.</p></div><span>↗</span></$link>
+<$link to="Cube Recipes"><span>02</span><div><h3>The Horadric Cube</h3><p>Recipes, materials, and transformations.</p></div><span>↗</span></$link>
+<$link to="Torment Trials"><span>03</span><div><h3>Beyond the campaign</h3><p>Take on the Torment Trials.</p></div><span>↗</span></$link>
+<$link to="Mercenaries"><span>04</span><div><h3>Allies in Sanctuary</h3><p>Mercenaries and summoned companions.</p></div><span>↗</span></$link>
+</div></section>
+<footer class="rmd-home-footer"><span>D2R <strong>MODDING</strong></span><p>Built by the community. For the community.</p><a href="https://d2rmodding.com/#remodded" target="_blank" rel="noopener noreferrer">THE REMODDED PROJECT ↗</a></footer>
+</div>

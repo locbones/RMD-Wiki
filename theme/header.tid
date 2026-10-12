@@ -1,0 +1,21 @@
+title: $:/core/ui/PageTemplate/topleftbar
+tags: $:/tags/PageTemplate
+type: text/vnd.tiddlywiki
+
+<header class="rmd-masthead">
+<$link to="ReMoDDeD Wiki" class="rmd-brand" aria-label="ReMoDDeD wiki home">
+<$image source="$:/rmd/assets/forge-sigil" width="40" height="50" alt=""/>
+<span class="rmd-wordmark">D2R<span class="rmd-wordmark-rule"></span>MODDING<small>THE SANCTUARY WORKSHOP</small></span>
+</$link>
+<nav class="rmd-header-nav" aria-label="Main navigation">
+<$link to="ReMoDDeD Wiki" class="rmd-wiki-link">Wiki <span>◆</span></$link>
+<$link to="Install Guide">Installation</$link>
+<$link to="Beginner's Info">Getting started</$link>
+<a href="https://d2rmodding.com" target="_blank" rel="noopener noreferrer">Website ↗</a>
+</nav>
+<div class="rmd-header-tools">
+<$reveal state="$:/state/sidebar" type="nomatch" text="no"><$button set="$:/state/sidebar" setTo="no" class="rmd-menu-toggle" aria-label="Hide wiki navigation" aria-expanded="true" aria-controls="rmd-sidebar">☰</$button></$reveal>
+<$reveal state="$:/state/sidebar" type="match" text="no"><$button set="$:/state/sidebar" setTo="yes" class="rmd-menu-toggle" aria-label="Show wiki navigation" aria-expanded="false" aria-controls="rmd-sidebar">☰</$button></$reveal>
+<span class="rmd-header-note">BY MODDERS.<br/>FOR MODDERS.</span>
+</div>
+</header>

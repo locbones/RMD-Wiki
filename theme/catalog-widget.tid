@@ -1,0 +1,249 @@
+title: $:/rmd/catalog-widget.js
+type: application/javascript
+module-type: widget
+
+(function () {
+  'use strict';
+  var Widget = require('$:/core/modules/widgets/widget.js').widget;
+  function element(doc,tag,classes,text) {
+    var node=doc.createElement(tag);
+    if(classes)node.setAttribute('class',classes);
+    if(text!=null)node.appendChild(doc.createTextNode(String(text)));
+    return node;
+  }
+  function Catalog(parseTreeNode,options) {this.initialise(parseTreeNode,options);}
+  Catalog.prototype=new Widget();
+  Catalog.prototype.load=function () {
+    this.kind=this.getAttribute('kind','bases');
+    this.dataTitle='$:/rmd/item-data/'+this.kind;
+    this.records=this.wiki.getTiddlerData(this.dataTitle,{records:[]}).records||[];
+    this.definitions=this.wiki.getTiddlerData('$:/rmd/item-data/definitions',{autoAffixes:{},properties:{},stats:{}});
+  };
+  Catalog.prototype.image=function (record,parent) {
+    var image=record.image&&this.wiki.getTiddler(record.image.title);
+    if(!image)return;
+    var node=element(this.document,'img','rmd-catalog-image');
+    node.setAttribute('src','data:'+image.fields.type+';base64,'+image.fields.text);
+    node.setAttribute('alt','');node.setAttribute('loading','lazy');node.setAttribute('decoding','async');
+    node.setAttribute('width',image.fields.width||'98');node.setAttribute('height',image.fields.height||'98');
+    parent.appendChild(node);
+  };
+  Catalog.prototype.properties=function (properties,parent,heading) {
+    var lines=[];
+    (properties||[]).forEach(function (p){(p.lines||[]).forEach(function (line){lines.push(line);});});
+    if(!lines.length)return;
+    if(heading)parent.appendChild(element(this.document,'h4','rmd-catalog-subheading',heading));
+    var list=element(this.document,'ul','rmd-catalog-mods');
+    lines.forEach(function (line){list.appendChild(element(this.document,'li','',line));},this);
+    parent.appendChild(list);
+  };
+  Catalog.prototype.baseStats=function (stats,parent) {
+    var list=element(this.document,'dl','rmd-catalog-base-stats');
+    stats.forEach(function(stat){list.appendChild(element(this.document,'dt','',stat.label));list.appendChild(element(this.document,'dd','',stat.value));},this);
+    parent.appendChild(list);
+  };
+  Catalog.prototype.partialBonuses=function (bonuses,parent,label) {
+    if(!bonuses||!bonuses.length)return;
+    var details=element(this.document,'details','rmd-catalog-inherent');
+    details.appendChild(element(this.document,'summary','',label));
+    bonuses.forEach(function(bonus){this.properties(bonus.properties,details,bonus.label);},this);
+    parent.appendChild(details);
+  };
+  Catalog.prototype.source=function (record,parent) {
+    var details=element(this.document,'details','rmd-catalog-source');
+    details.appendChild(element(this.document,'summary','','Source fields & provenance'));
+    if(record.source)details.appendChild(element(this.document,'p','rmd-catalog-provenance',record.source.file+' · line '+record.source.line+' · '+record.source.origin));
+    if(record.image)details.appendChild(element(this.document,'p','rmd-catalog-provenance','Sprite: '+record.image.relative+' · '+record.image.origin));
+    if(record.nameSource)details.appendChild(element(this.document,'p','rmd-catalog-provenance',record.nameSource.fallback?'Name uses the source table: no English string for '+record.nameSource.key:'Name: '+record.nameSource.key+' · '+record.nameSource.file+' · '+record.nameSource.origin));
+    var raw={fields:record.raw,properties:record.properties};
+    raw.propertyDefinitions={};
+    (record.properties||[]).forEach(function(p){if(this.definitions.properties[p.code])raw.propertyDefinitions[p.code]=this.definitions.properties[p.code];},this);
+    if(record.partialBonuses)raw.partialBonuses=record.partialBonuses;
+    if(record.baseSource)raw.baseSource=record.baseSource;
+    if(record.exampleBase)raw.exampleBase=record.exampleBase;
+    var pre=element(this.document,'pre','',JSON.stringify(raw,null,2));
+    details.appendChild(pre);parent.appendChild(details);
+  };
+  Catalog.prototype.item=function (record,parent) {
+    var card=element(this.document,'article','rmd-catalog-card rmd-catalog-'+record.kind);
+    var header=element(this.document,'div','rmd-catalog-item-header');
+    var name=element(this.document,'h3','',record.name);header.appendChild(name);
+    header.appendChild(element(this.document,'span','rmd-catalog-tier',record.tier==='F'?'Forsaken Pacts':record.tier==='L'?'Limit Break':record.tier||''));
+    card.appendChild(header);
+    var meta=[record.baseName||record.itemType,record.level!==''&&record.level!=null?'Quality level '+record.level:'',record.requiredLevel!==''&&record.requiredLevel!=null?'Required level '+record.requiredLevel:'',record.className?record.className+' only':''].filter(Boolean);
+    card.appendChild(element(this.document,'p','rmd-catalog-meta',meta.join(' · ')));
+    if(!record.enabled)card.appendChild(element(this.document,'p','rmd-catalog-status','Disabled in the source tables'));
+    var body=element(this.document,'div','rmd-catalog-item-body');
+    var identity=element(this.document,'div','rmd-catalog-identity');this.image(record,identity);body.appendChild(identity);
+    var stats=element(this.document,'div','rmd-catalog-stats');
+    if(record.kind==='bases'&&record.baseStats&&record.baseStats.length) {
+      var primary=record.baseStats.filter(function(stat){return /damage$|defense$|requirement$|^Sockets|^Socket capacity/i.test(stat.label)&&!/^Strength damage bonus/.test(stat.label);});
+      if(record.baseStats.length<=5)primary=record.baseStats.slice();
+      var sockets=primary.filter(function(stat){return /^Sockets, ilvl/.test(stat.label);});
+      if(sockets.length===3&&sockets.every(function(stat){return stat.value===sockets[0].value;})) {
+        primary=primary.filter(function(stat){return !/^Sockets, ilvl/.test(stat.label);});
+        primary.push({label:'Sockets · all item levels',value:sockets[0].value});
+      }
+      if(!primary.length)primary=record.baseStats.slice(0,2);
+      this.baseStats(primary,stats);
+    }
+    this.properties(record.properties,stats,record.kind==='bases'?null:'Item bonuses');
+    if(record.staffmodClass)stats.appendChild(element(this.document,'p','rmd-catalog-meta','Inherent skill-bonus class: '+record.staffmodClass));
+    if(record.carryOne)stats.appendChild(element(this.document,'p','rmd-catalog-status','Only one may be carried'));
+    this.partialBonuses(record.partialBonuses,stats,'Set bonuses');
+    (record.socketBonuses||[]).forEach(function (bonus){this.properties(bonus.properties,stats,'Socket bonuses · '+bonus.context);},this);
+    var autoAffixes=record.autoAffixes||(this.definitions.autoAffixes||{})[record.autoAffixKey]||[];
+    if(autoAffixes.length) {
+      var auto=element(this.document,'details','rmd-catalog-inherent');
+      auto.appendChild(element(this.document,'summary','','Inherent affix possibilities'));
+      autoAffixes.forEach(function (affix){this.properties(affix.properties,auto,affix.name+' · affix level '+affix.level+(affix.maxLevel&&affix.maxLevel!=='0'?'–'+affix.maxLevel:'+'));},this);
+      stats.appendChild(auto);
+    }
+    body.appendChild(stats);card.appendChild(body);
+    var extra=element(this.document,'details','rmd-catalog-extra');
+    extra.appendChild(element(this.document,'summary','',record.kind==='bases'?'All base stats & source':'Base stats & source'));
+    if(record.baseStats&&record.baseStats.length){extra.appendChild(element(this.document,'h4','rmd-catalog-subheading','Base stats · before item bonuses'));this.baseStats(record.baseStats,extra);}
+    this.source(record,extra);card.appendChild(extra);parent.appendChild(card);
+  };
+  Catalog.prototype.set=function (record,parent) {
+    var group=element(this.document,'section','rmd-catalog-set');
+    group.appendChild(element(this.document,'h3','rmd-catalog-set-name',record.name));
+    group.appendChild(element(this.document,'p','rmd-catalog-meta',(record.tier==='F'?'Forsaken Pacts · Cube-forged only · ':'')+record.items.length+' set items · Full-set required level '+record.requiredLevel));
+    var bonus=element(this.document,'details','rmd-catalog-set-bonuses');
+    bonus.appendChild(element(this.document,'summary','','Full & partial set bonuses'));
+    this.properties(record.properties,bonus,'Full set bonuses');
+    (record.partialBonuses||[]).forEach(function (b){this.properties(b.properties,bonus,'Partial set · '+b.label);},this);
+    group.appendChild(bonus);
+    var items=element(this.document,'div','rmd-catalog-grid');
+    record.items.forEach(function (item){this.item(item,items);},this);
+    group.appendChild(items);this.source(record,group);parent.appendChild(group);
+  };
+  Catalog.prototype.runeword=function (record,parent) {
+    var group=element(this.document,'section','rmd-catalog-runeword');
+    group.appendChild(element(this.document,'h3','rmd-catalog-runeword-name',record.name));
+    var visible=record.variants.filter(function (variant){return this.includeDisabled||variant.enabled;},this);
+    visible.forEach(function (variant,n){
+      var details=element(this.document,'details','rmd-catalog-rune-variant');
+      var sequence=variant.runes.map(function (r){return r.name;}).join(' + ');
+      var label=(variant.runic?'Runic':'Standard')+' · '+variant.sockets+' sockets · '+(variant.allowedTypes.map(function(t){return t.name;}).join(', ')||'No base type defined');
+      details.appendChild(element(this.document,'summary','',label));
+      if(n===0)details.setAttribute('open','');
+      var images=element(this.document,'div','rmd-catalog-rune-images');
+      images.setAttribute('role','group');images.setAttribute('aria-label','Rune order: '+(sequence||'No rune sequence defined'));
+      variant.runes.forEach(function (rune){var icon=element(this.document,'div','');this.image(rune,icon);icon.appendChild(element(this.document,'span','',rune.name));images.appendChild(icon);},this);
+      details.appendChild(images);
+      if(!variant.runes.length)details.appendChild(element(this.document,'p','rmd-catalog-status','No rune sequence defined'));
+      if(variant.excludedTypes.length)details.appendChild(element(this.document,'p','rmd-catalog-meta','Excluded: '+variant.excludedTypes.map(function(t){return t.name;}).join(', ')));
+      details.appendChild(element(this.document,'p','rmd-catalog-meta','Rune req. level '+variant.requiredRuneLevel+' · The base can raise the final requirement.'));
+      if(!variant.enabled)details.appendChild(element(this.document,'p','rmd-catalog-status','Incomplete / disabled source definition'));
+      var body=element(this.document,'div',variant.exampleBase?'rmd-catalog-runeword-body':'rmd-catalog-stats');
+      if(variant.exampleBase) {
+        var example=variant.exampleBase,figure=element(this.document,'figure','rmd-catalog-example-base');
+        var caption=element(this.document,'figcaption','');
+        caption.appendChild(element(this.document,'span','rmd-catalog-example-label',example.compatible?'Example base':'Base-type illustration'));
+        this.image(example,figure);
+        caption.appendChild(element(this.document,'strong','',example.name));
+        caption.appendChild(element(this.document,'span','rmd-catalog-meta',example.itemType));
+        figure.appendChild(caption);body.appendChild(figure);
+      }
+      var bonuses=element(this.document,'div','rmd-catalog-stats');
+      if(variant.exampleBase&&!variant.exampleBase.compatible)bonuses.appendChild(element(this.document,'p','rmd-catalog-status','The source lists '+variant.sockets+' sockets, but this base type supports up to '+variant.exampleBase.socketCapacity+'.'));
+      this.properties(variant.properties,bonuses,'Runeword bonuses');
+      body.appendChild(bonuses);details.appendChild(body);
+      var socket=element(this.document,'details','rmd-catalog-inherent');
+      socket.appendChild(element(this.document,'summary','','Additional rune socket bonuses'));
+      variant.runes.forEach(function (rune){(rune.socketBonuses||[]).forEach(function (bonus){this.properties(bonus.properties,socket,rune.name+' · '+bonus.context);},this);},this);
+      details.appendChild(socket);
+      if(variant.forging.length) {
+        var forging=element(this.document,'details','rmd-catalog-inherent');
+        forging.appendChild(element(this.document,'summary','','Runic forging tiers'));
+        forging.appendChild(element(this.document,'p','rmd-catalog-meta','Bonuses added by each upgrade. Use the runeword at the previous tier with the listed ingredients.'));
+        variant.forging.forEach(function (tier){
+          this.properties(tier.properties,forging,'Tier '+tier.tier);
+          forging.appendChild(element(this.document,'p','rmd-catalog-meta','Ingredients: '+(tier.inputNames||tier.inputs).join(' + ')));
+          if(!tier.enabled)forging.appendChild(element(this.document,'p','rmd-catalog-status','Recipe disabled in the source tables'));
+          this.source(tier,forging);
+          forging.appendChild(element(this.document,'p','rmd-catalog-provenance',tier.source.file+' · line '+tier.source.line));
+        },this);details.appendChild(forging);
+      }
+      this.source(variant,details);group.appendChild(details);
+    },this);
+    parent.appendChild(group);
+  };
+  Catalog.prototype.drawRecord=function (record,parent) {
+    if(record.kind==='sets')this.set(record,parent);
+    else if(record.kind==='runewords')this.runeword(record,parent);
+    else this.item(record,parent);
+  };
+  Catalog.prototype.render=function (parent,nextSibling) {
+    this.parentDomNode=parent;this.computeAttributes();this.load();
+    var root=element(this.document,'div','rmd-catalog');
+    parent.insertBefore(root,nextSibling);this.domNodes.push(root);
+    var ids=this.getAttribute('ids','');
+    if(ids) {this.includeDisabled=true;this.records.filter(function(r){return ids.split('|').indexOf(r.id)!==-1;}).forEach(function(r){this.drawRecord(r,root);},this);return;}
+    this.query=this.query||'';this.category=this.category||'all';this.tier=this.tier||'';this.page=0;this.includeDisabled=this.includeDisabled||false;this.sort=this.sort||'name';
+    var self=this, controls=element(this.document,'div','rmd-catalog-controls');
+    var searchRow=element(this.document,'div','rmd-catalog-search-row');
+    var searchLabel=element(this.document,'label','rmd-catalog-search');
+    var subject={bases:'item bases',uniques:'unique items',sets:'sets',runewords:'runewords'}[this.kind]||'items';
+    searchLabel.appendChild(element(this.document,'span','rmd-catalog-sr-only','Search the '+subject));
+    var search=element(this.document,'input','');search.setAttribute('type','search');search.setAttribute('placeholder','Search '+subject+'…');search.setAttribute('title','Search names, bases, item codes, skills or stats');search.value=this.query;searchLabel.appendChild(search);searchRow.appendChild(searchLabel);
+    var toggle=element(this.document,'button','rmd-catalog-button rmd-catalog-filter-toggle','Filters');toggle.setAttribute('type','button');
+    var open=!$tw.browser||!window.matchMedia('(max-width: 650px)').matches;
+    toggle.setAttribute('aria-expanded',String(open));searchRow.appendChild(toggle);controls.appendChild(searchRow);
+    var form=element(this.document,'div','rmd-catalog-filter-fields');
+    var controlsId='rmd-catalog-filters-'+(++Catalog.controlId);
+    form.hidden=!open;form.setAttribute('id',controlsId);toggle.setAttribute('aria-controls',controlsId);
+    toggle.addEventListener('click',function(){form.hidden=!form.hidden;toggle.setAttribute('aria-expanded',String(!form.hidden));});
+    function select(label,options,value,change) {
+      var wrapper=element(self.document,'label','',label),node=element(self.document,'select','');
+      options.forEach(function(option){var entry=element(self.document,'option','',option[1]);entry.setAttribute('value',option[0]);node.appendChild(entry);});
+      node.value=value;node.addEventListener('change',function(){change(node.value);self.page=0;self.update();});wrapper.appendChild(node);form.appendChild(wrapper);
+    }
+    if(this.kind==='bases'||this.kind==='uniques')select('Category',[['all','All categories'],['weapon','Weapons'],['armor','Armor'],['jewellery','Jewelry'],['charm','Charms'],['misc','Miscellaneous']],this.category,function(value){self.category=value;});
+    if(this.kind!=='runewords')select('Tier',[['','All tiers'],['I','Normal'],['II','Exceptional'],['III','Elite'],this.kind==='sets'?['F','Forsaken Pacts']:['L','Limit Break']],this.tier,function(value){self.tier=value;});
+    var sorts=[['name','Name'],['requiredLevel',this.kind==='runewords'?'Minimum rune level':'Required level']];
+    if(this.kind!=='runewords')sorts.push(['level','Quality level']);
+    select('Sort',sorts,this.sort,function(value){self.sort=value;});
+    if(this.kind!=='bases') {
+      var label=element(this.document,'label','rmd-catalog-checkbox');var checkbox=element(this.document,'input','');checkbox.setAttribute('type','checkbox');checkbox.checked=this.includeDisabled;
+      checkbox.addEventListener('change',function(){self.includeDisabled=checkbox.checked;self.page=0;self.update();});label.appendChild(checkbox);label.appendChild(this.document.createTextNode('Include disabled'));form.appendChild(label);
+    }
+    var reset=element(this.document,'button','rmd-catalog-button','Reset');reset.setAttribute('type','button');reset.addEventListener('click',function(){self.query='';self.category='all';self.tier='';self.sort='name';self.includeDisabled=false;self.refreshSelf();});form.appendChild(reset);
+    controls.appendChild(form);root.appendChild(controls);
+    this.count=element(this.document,'p','rmd-catalog-count');this.count.setAttribute('aria-live','polite');root.appendChild(this.count);
+    this.results=element(this.document,'div',this.kind==='sets'||this.kind==='runewords'?'rmd-catalog-groups':'rmd-catalog-grid');root.appendChild(this.results);
+    this.pager=element(this.document,'nav','rmd-catalog-pagination');this.pager.setAttribute('aria-label','Item database pages');root.appendChild(this.pager);
+    var timer;search.addEventListener('input',function(){clearTimeout(timer);self.query=search.value;self.page=0;timer=setTimeout(function(){self.update();},120);});
+    this.update();
+  };
+  Catalog.prototype.update=function () {
+    var query=this.query.toLowerCase(), self=this;
+    var rows=this.records.filter(function(record){
+      if(!self.includeDisabled&&!record.enabled)return false;
+      if(self.category!=='all'&&record.category!==self.category)return false;
+      if(self.tier&&record.tier!==self.tier&&!(record.items||[]).some(function(item){return item.tier===self.tier;}))return false;
+      return !query||(record.search||record.name).toLowerCase().indexOf(query)!==-1;
+    });
+    rows.sort(function(a,b){return self.sort==='name'?a.name.localeCompare(b.name):(Number(a[self.sort]||0)-Number(b[self.sort]||0)||a.name.localeCompare(b.name));});
+    var size=this.kind==='sets'?4:this.kind==='runewords'?10:24;
+    var total=Math.max(1,Math.ceil(rows.length/size));this.page=Math.min(this.page,total-1);
+    var start=this.page*size,end=Math.min(start+size,rows.length);
+    this.count.textContent=rows.length?'Showing '+(start+1)+'–'+end+' of '+rows.length+' · Page '+(this.page+1)+' of '+total:'No matching items';
+    while(this.results.firstChild)this.results.removeChild(this.results.firstChild);
+    rows.slice(start,end).forEach(function(record){self.drawRecord(record,self.results);});
+    while(this.pager.firstChild)this.pager.removeChild(this.pager.firstChild);
+    [['Previous',-1],['Next',1]].forEach(function(entry){
+      var button=element(self.document,'button','rmd-catalog-button',entry[0]);button.setAttribute('type','button');button.disabled=entry[1]<0?self.page===0:self.page===total-1;
+      button.addEventListener('click',function(){self.page+=entry[1];self.update();self.count.scrollIntoView({block:'start',behavior:'auto'});});self.pager.appendChild(button);
+    });
+  };
+  Catalog.prototype.refresh=function(changedTiddlers) {
+    var attributes=this.computeAttributes();
+    if(attributes.kind||attributes.ids||changedTiddlers[this.dataTitle]){this.refreshSelf();return true;}
+    return false;
+  };
+  Catalog.controlId=0;
+  exports['rmd-catalog']=Catalog;
+  exports['rmd-item']=Catalog;
+})();

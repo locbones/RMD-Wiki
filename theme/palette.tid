@@ -1,0 +1,157 @@
+title: $:/rmd/palette/Sanctuary
+type: application/x-tiddler-dictionary
+tags: $:/tags/Palette
+name: Sanctuary Workshop
+description: Warm gold and ember accents from d2rmodding.com
+
+crust: #0c0909
+surface0: #4b2c25
+overlay0: #7e6253
+base06: #080606
+mantle: #140e0e
+base02: #a78e7d
+text: #d8c9bc
+base04: #a78e7d
+base05: #f3e5c4
+blue: #d5af70
+blue-muted: #b99453
+green-muted: #7d9e7f
+orange: #cb4b16
+orange-hot: #eb6d20
+red: #c35336
+red-hot: #ed7450
+violet-muted: #7c81b0
+yellow: #e7c28a
+yellow-hot: #ffcc44
+rosewater: #f4dbd6
+flamingo: #f0c6c6
+pink: #f5bde6
+mauve: #c6a0f6
+maroon: #ee99a0
+peach: #f5a97f
+green: #a6da95
+teal: #8bd5ca
+sky: #91d7e3
+sapphire: #7dc4e4
+lavender: #b7bdf8
+page-background: #0c0909
+button-background: #1c1110
+dropdown-background: <<colour page-background>>
+sidebar-tab-background: <<colour page-background>> 
+table-footer-background: #1c1110
+tiddler-background: #100b0b
+tiddler-border: #4b2c25
+tiddler-editor-background: <<colour page-background>>
+tiddler-editor-fields-odd: <<colour page-background>>
+tiddler-editor-fields-even: <<colour page-background>>
+tiddler-info-background: <<colour page-background>>
+background: #241716
+alert-background: <<colour background>>
+button-border: #754034
+code-border: <<colour background>>
+dropdown-border: #754034
+message-background: <<colour background>>
+modal-background: #1c1110
+modal-footer-background: <<colour background>>
+notification-background: <<colour background>>
+pre-border: <<colour background>>
+sidebar-controls-foreground: #c2ada0
+sidebar-tab-border: <<colour background>>
+sidebar-tab-border-selected: <<colour background>>
+tab-background-selected: #381c16
+tab-border: #4b2c25
+tab-border-selected: <<colour background>>
+tag-background: #241716
+tiddler-controls-foreground: #a78e7d
+tiddler-info-tab-background: <<colour background>>
+tiddler-subtitle-foreground: <<colour background>>
+sidebar-tab-background-selected: <<colour base07>> 
+tab-background: #1c1110
+table-header-background: #241716
+foreground: #d8c9bc
+sidebar-foreground: #c2ada0
+button-foreground: #e7c28a
+code-foreground: #e7c28a
+download-foreground: <<colour sidebar-foreground>>
+message-border: <<colour sidebar-foreground>>
+message-foreground: <<colour sidebar-foreground>>
+modal-border: #754034
+modal-footer-border: <<colour sidebar-foreground>>
+modal-header-border: <<colour sidebar-foreground>>
+sidebar-button-foreground: <<colour sidebar-foreground>>
+sidebar-controls-foreground-hover: <<colour sidebar-foreground>>
+sidebar-tab-foreground: <<colour sidebar-foreground>>
+tab-foreground: <<colour sidebar-foreground>>
+tag-foreground: #e7c28a
+tiddler-controls-foreground-hover: <<colour sidebar-foreground>>
+modal-backdrop: rgba(0,0,0,.8)
+muted-foreground: #a78e7d
+sidebar-muted-foreground: #a78e7d
+sidebar-muted-foreground-hover: <<colour base04>>
+table-border: #4b2c25
+very-muted-foreground: #927c6d
+code-background: #241716
+pre-background: #080606
+external-link-background: transparent
+external-link-background-hover: transparent
+external-link-background-visited: transparent
+tab-divider: transparent
+sidebar-tab-divider: transparent
+sidebar-foreground-shadow: transparent
+tiddler-link-background: transparent
+blockquote-bar: <<colour blue>>
+external-link-foreground: #d5af70
+external-link-foreground-hover: <<colour blue>>
+external-link-foreground-visited: #d5af70
+primary: #d5af70
+sidebar-tab-foreground-selected: <<colour blue>>
+sidebar-tiddler-link-foreground: <<colour blue>>
+sidebar-tiddler-link-foreground-hover: <<colour blue>>
+site-title-foreground: <<colour blue>>
+tiddler-controls-foreground-selected: <<colour blue>>
+tiddler-editor-border: #754034
+tiddler-editor-border-image: <<colour blue>>
+tiddler-info-border: <<colour blue>>
+tiddler-link-foreground: #d5af70
+toolbar-done-button: <<colour green-muted>>
+toolbar-cancel-button: <<colour orange-hot>>
+toolbar-info-button: <<colour orange-hot>>
+alert-highlight: <<colour red>>
+alert-muted-foreground: <<colour red>>
+dirty-indicator: <<colour red>>
+notification-border: <<colour red>>
+tab-foreground-selected: #e7c28a
+toolbar-delete-button: <<colour red>>
+xforeground: #f2f2f2
+tiddler-title-foreground: #e7c28a
+alert-border: #b99e2f
+download-background: <<colour external-link-foreground>>
+toolbar-close-button: 
+toolbar-edit-button: 
+toolbar-new-button: 
+toolbar-options-button: 
+toolbar-save-button: 
+diff-delete-background: #ffc9c9
+diff-delete-foreground: red
+diff-equal-background: 
+diff-equal-foreground: red
+diff-insert-background: #aaefad
+diff-insert-foreground: red
+diff-invisible-background: 
+diff-invisible-foreground: <<colour muted-foreground>>
+dragger-background: rgb(179, 179, 179)
+dragger-foreground: rgb(38, 38, 38)
+dropdown-tab-background: rgba(0,0,0,.1)
+dropdown-tab-background-selected: rgba(255,255,255,1)
+dropzone-background: #9eebcf
+highlight-background: #d5af70
+highlight-foreground: #080606
+select-tag-background: 
+select-tag-foreground: 
+static-alert-foreground: rgba(0,0,0,.3)
+untagged-background: rgb(255, 255, 255)
+base00: #0c0909
+base01: #241716
+base03: #c2ada0
+base07: #1c1110
+tiddler-link-foreground-hover: #f3e5c4

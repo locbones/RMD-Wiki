@@ -1,0 +1,31 @@
+title: $:/rmd/embedded.js
+type: application/javascript
+
+/* Run inside the existing isolated HTML libraries. Native details keep the
+   filters available without placing every button ahead of the items on phones. */
+(function () {
+  var panel = document.querySelector('.dt-panel,.si-panel,.rw-panel');
+  var controls = panel && panel.querySelector('.dt-controls,.si-controls,.rw-controls');
+  if (!controls) return;
+  var drawer = document.createElement('details');
+  drawer.className = 'rmd-library-filters';
+  var summary = document.createElement('summary');
+  summary.textContent = 'Search, filter & sort';
+  drawer.appendChild(summary);
+  controls.parentNode.insertBefore(drawer, controls);
+  drawer.appendChild(controls);
+  var narrow = window.matchMedia('(max-width: 650px)');
+  function setLayout() { drawer.open = !narrow.matches; }
+  setLayout();
+  if (narrow.addEventListener) narrow.addEventListener('change', setLayout);
+  else narrow.addListener(setLayout);
+  // The set library predates the other libraries' ResizeObservers. Reuse its
+  // existing size-message protocol when its filter disclosure changes height.
+  if (panel.classList.contains('si-panel')) {
+    var report = function () {
+      window.parent.postMessage({type: 'dt-content-size', tiddler: 'Set Items', height: Math.max(80, Math.ceil(panel.getBoundingClientRect().height) + 24)}, '*');
+    };
+    drawer.addEventListener('toggle', report);
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(report).observe(panel);
+  }
+})();

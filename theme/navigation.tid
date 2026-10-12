@@ -1,0 +1,87 @@
+title: $:/rmd/navigation
+type: text/vnd.tiddlywiki
+
+<$link to="ReMoDDeD Wiki" class="rmd-nav-home">Wiki home <span>⌂</span></$link>
+<details><summary>ReMoDDeD Showcase</summary><div class="rmd-nav-children">
+[[ReMoDDeD Overview|ReMoDDeD Overview]]
+[[Special Mod Mechanics|Special Mod Mechanics]]
+</div></details>
+<details open><summary>New Player Area</summary><div class="rmd-nav-children">
+[[Install Guide|Install Guide]]
+[[Install Guide - Alternate|Install Guide - Alternate]]
+[[Beginner's Info|Beginner's Info]]
+[[Our Programs (WIP 50%)|Our Programs]]
+[[Common FaQ's|Common FAQ'S]]
+[[Monster Resistances/Immunities|Monster Resistances/Immunities]]
+[[Troubleshooting|Work in Progress]]
+[[Custom Stats|ReMoDDeD Only Custom Stats]]
+[[Riddles of Sanctuary|Riddles of Sanctuary]]
+</div></details>
+<details><summary>New Systems</summary><div class="rmd-nav-children">
+[[Storage Bag|Quality of Life Storage Bag]]
+[[Item Enhancing|Item Enhancing]]
+[[Runic Forging|Runic Forging]]
+[[Blood Contracts|Blood Contracts]]
+[[Demon Tempering|Demon Tempered Relics]]
+[[Forsaken Pacts|Forsaken Pacts]]
+[[Charm Weighting System|Charm Weighting System]]
+[[Limit Breaking|Limit Breaking]]
+</div></details>
+<details><summary>Classes/Skills</summary><div class="rmd-nav-children">
+[[Amazon|Amazon]]
+[[Assassin|Assassin]]
+[[Barbarian|Barbarian]]
+[[Druid|Druid]]
+[[Necromancer|Necromancer]]
+[[Paladin|Paladin]]
+[[Sorceress|Sorceress]]
+[[Open Skills (WIP 50%)|Open Skills]]
+</div></details>
+<details><summary>Items</summary><div class="rmd-nav-children">
+[[Overview (WIP)|Work in Progress]]
+[[Item Bases|Item Bases]]
+[[Affixes (WIP)|Work in Progress]]
+[[Sets|Set Items]]
+[[Uniques|Unique Items]]
+[[Demon Tempers|Demon Temper Recipes]]
+[[Runewords|Runewords]]
+[[Loot Filter|D2ReMoDDeD Loot Filter]]
+[[Superior Affix|Superior Items]]
+</div></details>
+<details><summary>Cube Recipes</summary><div class="rmd-nav-children">
+[[Recipes|Cube Recipes]]
+[[Storage Bag|Quality of Life Storage Bag]]
+[[Rift Shop|Horadric Rift Shop]]
+</div></details>
+<details><summary>Mercenaries & Summons</summary><div class="rmd-nav-children">
+[[Mercenaries|Mercenaries]]
+[[Soul Summons|Soul Summons]]
+[[Summoning Skills Benefits|Summoning Skills Benefits]]
+</div></details>
+<details><summary>Monsters</summary><div class="rmd-nav-children">
+[[Overview (WIP)|Work in Progress]]
+[[Bestiary (WIP)|Work in Progress]]
+[[Bosses (WIP)|Work in Progress]]
+[[Edyrem (WIP)|Work in Progress]]
+[[Greedy Goblins|Greedy Goblins]]
+</div></details>
+<details><summary>Levels</summary><div class="rmd-nav-children">
+[[Torment Trials|Torment Trials]]
+[[Area Levels|Area Levels]]
+[[Über Tristram & Diablo Clone|Über Tristram & Diablo Clone]]
+</div></details>
+<details><summary>Patch Notes</summary><div class="rmd-nav-children">
+[[Beta (0.9.9.XX)|Patch Notes Beta]]
+[[Alpha (0.9.9.XX)|Patch Notes Alpha]]
+[[Our Applications|Our Applications - Changelog]]
+</div></details>
+<details><summary>Modding Guides</summary><div class="rmd-nav-children">
+[[Hitchhiker's Guide|16.01 The Hitchhiker's Guide]]
+[[The Catabombs|16.02 The Catacombs]]
+</div></details>
+<details><summary>More</summary><div class="rmd-nav-children">
+{{$:/core/ui/SideBar/More}}
+</div></details>
+<details><summary>Plugin</summary><div class="rmd-nav-children">
+{{99.07 Plugin}}
+</div></details>
