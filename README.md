@@ -77,3 +77,29 @@ The verifier compares every imported source row and main property slot, checks c
 Each enabled runeword variant also shows an example base with its original sprite. Selection follows the allowed types in source order, includes both base types and their inherited types, respects exclusions, and checks socket limits from the base, item type, and inventory dimensions. It prefers a spawnable base with a low quality level; Spell Blade variants therefore use Crystal Sword. Examples adapt to the required socket count, so a six-socket staff variant uses War Staff. These are representative bases.
 
 All 324 enabled variants have base illustrations; 322 have examples meeting the supplied socket limits. **Night** requests six sockets on belts capped at two, and one **Soldier** variant requests six sockets on Limit Break armor capped at four. Their illustrations carry explicit socket-mismatch notes and audit entries. Disabled placeholders without a base type or rune sequence have no invented example. Example images reuse the existing embedded base sprites and appear beside bonuses on desktop, stacking above bonuses on phones.
+
+## Maintaining the Bestiary
+
+The Bestiary imports all 942 monster definitions and 80 named superuniques from the same authoritative mod and Archive folders. Every record has an individual native wiki page. The main catalog provides search, difficulty selection, type/family/act/area/immunity filters, Torment Trials and mod-addition views, and expandable combat, encounter and loot details. Its styles are scoped to the Bestiary so they do not change guide or item imagery.
+
+Life, physical attack damage, defense, attack rating and XP use the Expansion scaling columns in `monlvl.txt`. Nightmare/Hell area levels apply to ordinary monsters; boss and `noRatio` exceptions retain their source levels. Values show the baseline before party scaling, extra monster properties and unique/champion effects. Named superunique cards explicitly identify their class baseline and use their own loot groups and fixed modifiers. Poison, skill damage, affixes and scripted effects can require additional runtime calculations. The page explains these distinctions beside the data.
+
+Encounter evidence combines `levels.txt` spawn pools, direct placements decoded from 2,096 DS1 maps, and explicit spawn/minion relationships. A map template with no linked level remains a named map placement. Dynamic map markers and scripted encounters are not assigned invented locations. Source fields and provenance are retained in `data/bestiary.json` for maintenance, without a source inspector in the player interface. Four missing English string keys use their source names and are listed in `data/bestiary-validation.json`.
+
+The 266 representative model setups are decoded through the user's D2RNexus Granny backend and texture decoder, then rendered with offscreen OpenGL. Models containing several body sections are exported separately; duplicate levels of detail and identifiable corpse fragments are excluded. Albedo transparency is respected. Animated creatures use a still from one quarter of their neutral/idle clip. `idle_pose.py` samples the complete unit rig through Nexus's Granny runtime, then applies each body section's own inverse bind matrices by bone name. Section-only bones follow their animated parent. This preserves alignment on multi-part creatures. Static objects without animation linkage retain their geometry. Simple preview lighting is used; variant tinting, equipped attachments and particles can differ in-game. The Burning Soul clone shares the visual definition of its matching `MonStatsEx` family, with that relationship recorded. Helpers without visible geometry have no invented portrait. WebP files under `Images/bestiary` are also embedded for offline use.
+
+Rebuild with Node.js, Python, NumPy, Pillow and ModernGL. The renderer defaults to `C:\Users\djsch\Github\D2RNexus\vendor\ModelConverter`; set `RMD_NEXUS` to relocate that backend. Its native binaries are Windows dependencies. Install the Python packages into the ignored local dependency folder:
+
+```powershell
+python -m pip install --target .tmp/bestiary-python numpy Pillow moderngl
+node scripts/build-bestiary.cjs --prepare-only
+python scripts/bestiary/render.py --force
+node scripts/build-bestiary.cjs --reuse-prepared
+node scripts/apply-theme.cjs
+node scripts/verify-bestiary.cjs
+node scripts/apply-theme.cjs --check
+```
+
+`--force` refreshes portraits when source artwork changes. Without it, the renderer resumes using successful cached portraits. Use `--units skeleton1,zombie1 --preview --force` to inspect a subset under `.tmp/bestiary-idle-preview` without replacing wiki portraits. Decompressed models and separate model sections are cached under ignored `.tmp/bestiary-render`; original game inputs and the Nexus application are not modified. `neutral_clip.py` writes only temporary Granny preview files. Where a summon archive contains only death clips, the renderer follows alternate idle links declared by its state machine into the player animation archive (Valkyrie and Assassin shadows). The rendering audit records image dimensions, geometry coverage, sampled idle clip/time, inherited section bones, missing textures and decoding issues.
+
+The verifier compares every monster row, difficulty stat field, property slot, visual definition and superunique loot group with the inputs. It checks stat scaling and exceptions, individual pages, embedded image bytes, and preservation of pre-existing wiki content against `.tmp/before-bestiary/index.html` when that local snapshot exists. Browser checks cover search, filters, difficulty changes, disclosures, paging, native links and mobile overflow.

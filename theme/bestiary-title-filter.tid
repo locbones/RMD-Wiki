@@ -1,0 +1,6 @@
+title: $:/rmd/monster-title-filter
+type: text/vnd.tiddlywiki
+tags: $:/tags/ViewTemplateTitleFilter
+list-before: $:/config/ViewTemplateTitleFilters/default
+
+[has[rmd-monster-id]then[$:/rmd/monster-title]]

@@ -1,0 +1,5 @@
+title: $:/rmd/monster-title
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<h2 class="tc-title">Bestiary ·&nbsp;<$view field="rmd-monster-name"/></h2>

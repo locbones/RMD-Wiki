@@ -1,0 +1,118 @@
+title: $:/rmd/bestiary-widget.js
+type: application/javascript
+module-type: widget
+
+(function(){
+  'use strict';
+  var Widget=require('$:/core/modules/widgets/widget.js').widget,calculate=require('$:/rmd/bestiary-stats.js').calculate;
+  var difficulties=['Normal','Nightmare','Hell'],resistanceNames=['Physical','Magic','Fire','Lightning','Cold','Poison'];
+  var modifiers={strong:'Extra Strong',fast:'Extra Fast',curse:'Cursed',resist:'Magic Resistant',fire:'Fire Enchanted',light:'Lightning Enchanted',cold:'Cold Enchanted',mana:'Mana Burn',teleport:'Teleportation',spectralhit:'Spectral Hit',stoneskin:'Stone Skin',multishot:'Multiple Shots'};
+  function node(doc,tag,cls,text){var el=doc.createElement(tag);if(cls)el.className=cls;if(text!=null)el.appendChild(doc.createTextNode(String(text)));return el;}
+  function number(n){return Number(n).toLocaleString('en-US');}
+  function range(pair){return pair[0]===pair[1]?number(pair[0]):number(pair[0])+'–'+number(pair[1]);}
+  function Bestiary(tree,options){this.initialise(tree,options);}
+  Bestiary.prototype=new Widget();
+  Bestiary.prototype.load=function(){this.data=this.wiki.getTiddlerData('$:/rmd/monster-data',{records:[],areas:[],scaling:[],difficulties:[]});this.records=this.data.records;this.areaMap={};this.data.areas.forEach(function(a){this.areaMap[a.id]=a;},this);};
+  Bestiary.prototype.link=function(title,label,parent){var a=node(this.document,'a','',label);a.setAttribute('href','#'+encodeURIComponent(title));var self=this;a.addEventListener('click',function(event){event.preventDefault();self.dispatchEvent({type:'tm-navigate',navigateTo:title,navigateFromTitle:self.getVariable('currentTiddler'),navigateFromNode:a,navigateSuppressNavigation:false,event:event});});parent.appendChild(a);};
+  Bestiary.prototype.select=function(parent,label,values,current,onChange){var wrap=node(this.document,'label','rmd-be-field'),select=node(this.document,'select');wrap.appendChild(node(this.document,'span','',label));select.setAttribute('aria-label',label);values.forEach(function(v){var o=node(this.document,'option','',v[1]);o.value=v[0];select.appendChild(o);},this);select.value=current;select.addEventListener('change',function(){onChange(select.value);});wrap.appendChild(select);parent.appendChild(wrap);return select;};
+  Bestiary.prototype.badge=function(parent,text,cls){parent.appendChild(node(this.document,'span','rmd-be-badge '+(cls||''),text));};
+  Bestiary.prototype.stats=function(parent,rows){var dl=node(this.document,'dl','rmd-be-stats');rows.forEach(function(r){dl.appendChild(node(this.document,'dt','',r[0]));dl.appendChild(node(this.document,'dd','',r[1]));},this);parent.appendChild(dl);};
+  Bestiary.prototype.disclosure=function(parent,title){var details=node(this.document,'details','rmd-be-details');details.appendChild(node(this.document,'summary','',title));var body=node(this.document,'div','rmd-be-details-body');details.appendChild(body);parent.appendChild(details);return body;};
+  Bestiary.prototype.list=function(parent,lines){var ul=node(this.document,'ul','rmd-be-list');lines.forEach(function(line){ul.appendChild(node(this.document,'li','',line));},this);parent.appendChild(ul);};
+  Bestiary.prototype.card=function(r,parent){
+    var self=this,d=this.difficulty,card=node(this.document,'article','rmd-be-card');card.setAttribute('data-monster-id',r.id);
+    var head=node(this.document,'header','rmd-be-card-head'),heading=node(this.document,'h3');this.link(r.title,r.name,heading);head.appendChild(heading);this.badge(head,r.role,r.role==='Boss'||r.role==='Superunique'?'rmd-be-boss':'');card.appendChild(head);
+    var internalName=node(this.document,'p','rmd-be-monstats');internalName.appendChild(node(this.document,'code','','('+(r.raw.Id||(r.role==='Superunique'?r.baseId:r.id))+')'));card.appendChild(internalName);
+    card.appendChild(node(this.document,'p','rmd-be-meta',r.family+' · '+r.group+(r.description?' · '+r.description:'')+(r.baseName?' · '+r.baseName:'')+(!r.enabled?' · Disabled definition':'')));
+    var overview=node(this.document,'div','rmd-be-overview'),portrait=node(this.document,'div','rmd-be-portrait');
+    var image=r.image&&this.wiki.getTiddler(r.image.title);
+    if(image){var img=node(this.document,'img');img.src='data:'+image.fields.type+';base64,'+image.fields.text;img.alt=r.name+' model illustration';img.setAttribute('loading','lazy');img.setAttribute('decoding','async');img.width=480;img.height=480;portrait.appendChild(img);}
+    else {portrait.appendChild(node(this.document,'span','rmd-be-no-model',r.role==='Helper'?'◌':'◇'));portrait.appendChild(node(this.document,'small','',r.role==='Helper'?'Effect or helper':'No visible model'));}
+    overview.appendChild(portrait);var primary=node(this.document,'div','rmd-be-primary');overview.appendChild(primary);card.appendChild(overview);
+    var available=[...new Set(r.locations.filter(function(l){return l.difficulty===d;}).map(function(l){return l.area;}))];
+    var selected=this.area&&available.includes(this.area)?this.area:available[0]||'';
+    var context=node(this.document,'div','rmd-be-context');card.appendChild(context);
+    this.select(context,'Stats location',[['','Reference level']].concat(available.map(function(id){return [id,self.areaMap[id].name];})),selected,function(value){selected=value;paint();});
+    var resistance=node(this.document,'div','rmd-be-resistances');card.appendChild(resistance);
+    var detailWrap=node(this.document,'div');card.appendChild(detailWrap);
+    function paint(){
+      while(primary.firstChild)primary.removeChild(primary.firstChild);while(resistance.firstChild)resistance.removeChild(resistance.firstChild);while(detailWrap.firstChild)detailWrap.removeChild(detailWrap.firstChild);
+      var area=self.areaMap[selected],stats=calculate(r,d,area,self.data.scaling);
+      self.stats(primary,[['Level',stats.level],['Life',range(stats.hp)],['Defense',number(stats.defense)],['Attack 1',range(stats.attacks[0].damage)],['Base XP',number(stats.experience)]]);
+      resistance.setAttribute('aria-label','Resistances');resistanceNames.forEach(function(label,i){var value=stats.resists[i],immune=value>=100;var badge=node(self.document,'span','rmd-be-resist rmd-be-resist-'+i+(immune?' rmd-be-immune':''));badge.appendChild(node(self.document,'span','',label));badge.appendChild(node(self.document,'strong','',value+'%'));if(immune)badge.appendChild(node(self.document,'small','','Immune'));resistance.appendChild(badge);});
+      if(r.role==='Superunique')detailWrap.appendChild(node(self.document,'p','rmd-be-note','Class baseline • fixed and random unique modifiers can increase these values.'));
+      var abilities=self.disclosure(detailWrap,'Combat & abilities');
+      var rows=stats.attacks.filter(function(a){return a.damage[1]||a.rating;}).map(function(a){return [a.mode==='A1'?'Attack 1':a.mode==='A2'?'Attack 2':'Skill animation',range(a.damage)+' physical · '+number(a.rating)+' attack rating'];});
+      rows.push(['Critical hit',r.critical+'%'],['Block',stats.block+'%'],['Leech effectiveness',stats.drain+'% before difficulty penalty'],['Cold speed effect',stats.coldEffect+'%'],['Walk / run speed',r.movement.walk+' / '+r.movement.run+' game units'],[r.role==='Superunique'?'Configured minions':'Pack size',range(r.pack)]);self.stats(abilities,rows);
+      if(r.regeneration)abilities.appendChild(node(self.document,'p','rmd-be-note','Regenerates approximately '+(r.regeneration*25/4096*100).toFixed(2)+'% of maximum life per second before other effects.'));
+      if(r.skills.length){abilities.appendChild(node(self.document,'h4','','Skills'));self.list(abilities,r.skills.map(function(sk){return sk.name+' · level '+(sk.level+Number(self.data.difficulties[d].MonsterSkillBonus||0))+' · '+(sk.mode||'AI controlled');}));}
+      if(stats.elements.length){abilities.appendChild(node(self.document,'h4','','Elemental attack fields'));self.list(abilities,stats.elements.map(function(e){var type={fire:'Fire',cold:'Cold',ltng:'Lightning',pois:'Poison',mag:'Magic',mana:'Mana drain',stam:'Stamina drain',stun:'Stun',burn:'Burning',rand:'Random element'}[e.type]||e.type;return (e.mode?({A1:'Attack 1',A2:'Attack 2',S1:'Skill animation'}[e.mode]||e.mode)+': ':'')+type+' · '+range(e.damage)+(e.chance?' · '+e.chance+'% application chance':'')+(e.frames?' · '+(e.frames/25).toFixed(2)+' seconds':'');}));}
+      if(stats.properties.some(function(p){return !p.internal;})){abilities.appendChild(node(self.document,'h4','','Additional monster properties'));self.list(abilities,stats.properties.filter(function(p){return !p.internal;}).flatMap(function(p){var lines=p.lines.length?p.lines:[p.code+' · '+p.min+'–'+p.max+(p.param?' · '+p.param:'')];return lines.map(function(line){return line+(p.chance?' · '+p.chance+'% property assignment chance':'');});}));}
+      if(r.modifiers&&r.modifiers.length){abilities.appendChild(node(self.document,'h4','','Fixed unique modifiers'));self.list(abilities,r.modifiers.map(function(m){return modifiers[m.code]||m.code;}));}
+      if(r.children.length){abilities.appendChild(node(self.document,'h4','','Configured spawns & minions'));r.children.forEach(function(id){var child=self.records.find(function(m){return m.id===id;});if(child){var p=node(self.document,'p');self.link(child.title,child.name,p);abilities.appendChild(p);}},self);}
+      if(r.raw.SkillDamage)abilities.appendChild(node(self.document,'p','rmd-be-note','Damage is also linked to its owner’s '+r.raw.SkillDamage+' skill.'));
+      var encounters=self.disclosure(detailWrap,'Where to find · '+available.length+' linked areas');
+      var locs=r.locations.filter(function(l){return l.difficulty===d;});
+      if(!locs.length)encounters.appendChild(node(self.document,'p','rmd-be-note','No random area pool or directly linked fixed area in the source files. This definition may be summoned, scripted, or unused.'));
+      available.forEach(function(id){var a=self.areaMap[id],item=node(self.document,'div','rmd-be-area');item.appendChild(node(self.document,'strong','',a.name));item.appendChild(node(self.document,'span','','Act '+a.act+' · area level '+a.levels[d]));item.appendChild(node(self.document,'small','',[...new Set(locs.filter(function(l){return l.area===id;}).map(function(l){return l.method;}))].join(' / ')));encounters.appendChild(item);});
+      if(r.placements.length){encounters.appendChild(node(self.document,'h4','','Map placements'));self.list(encounters,r.placements.map(function(p){return p.preset+' · Act '+p.act;}));}
+      var loot=self.disclosure(detailWrap,'Loot groups');
+      if(!stats.treasure.length)loot.appendChild(node(self.document,'p','rmd-be-note','No treasure class configured for this difficulty.'));
+      stats.treasure.forEach(function(t){var label=t.field.replace(/TreasureClass/,'Group ').replace(/\([NH]\)/,'');loot.appendChild(node(self.document,'h4','',label+' · '+t.value));if(t.definition){var choices=Object.keys(t.definition).filter(function(k){return /^Item\d+$/i.test(k);}).map(function(k){return t.definition[k];});self.list(loot,choices);} });
+      loot.appendChild(node(self.document,'p','rmd-be-note','These are configured loot branches, not guaranteed drops. Area upgrades, quest state, player count, and item quality rolls affect the result.'));
+    }
+    paint();parent.appendChild(card);
+  };
+  Bestiary.prototype.matches=function(r){
+    var enemy=['Enemy','Boss','Superunique'].includes(r.role);
+    if(this.scope==='enemies'&&(!r.enabled||!enemy))return false;
+    if(this.scope==='bosses'&&(!r.enabled||!['Boss','Superunique'].includes(r.role)))return false;
+    if(this.scope==='summons'&&(!r.enabled||!['Summon','Ally'].includes(r.role)))return false;
+    if(this.scope==='other'&&enemy&&r.enabled)return false;
+    if(this.collection==='custom'&&!r.added)return false;
+    if(this.collection==='trials'&&!r.locations.some(function(l){return /^Icy Hell|Trials End/.test(this.areaMap[l.area].name);},this)&&!r.placements.some(function(p){return /Icy Hell|Trial/i.test(p.preset);} ))return false;
+    if(this.group&&r.group!==this.group)return false;if(this.family&&r.family!==this.family)return false;
+    if(this.area&&!r.locations.some(function(l){return l.area===this.area&&l.difficulty===this.difficulty;},this))return false;
+    if(this.act&&!r.locations.some(function(l){return this.areaMap[l.area].act===Number(this.act);},this)&&!r.placements.some(function(p){return p.act===Number(this.act);},this))return false;
+    if(this.immune!==''&&r.stats[this.difficulty].resists[Number(this.immune)]<100)return false;
+    return !this.query||(r.name+' '+r.id+' '+r.family+' '+r.baseName+' '+r.skills.map(function(s){return s.name;}).join(' ')+' '+r.locations.map(function(l){return this.areaMap[l.area].name;},this).join(' ')).toLowerCase().includes(this.query);
+  };
+  Bestiary.prototype.results=function(){
+    var self=this;while(this.grid.firstChild)this.grid.removeChild(this.grid.firstChild);while(this.pages.firstChild)this.pages.removeChild(this.pages.firstChild);
+    var records=this.records.filter(function(r){return self.matches(r);}),encounterOrder={};
+    records.forEach(function(r){encounterOrder[r.id]=Math.min.apply(null,r.locations.filter(function(l){return l.difficulty===self.difficulty;}).map(function(l){return Number(l.area);}));});
+    records.sort(function(a,b){return self.sort==='level'?b.stats[self.difficulty].level-a.stats[self.difficulty].level||a.name.localeCompare(b.name):self.sort==='family'?a.family.localeCompare(b.family)||a.name.localeCompare(b.name):self.sort==='area'?encounterOrder[a.id]-encounterOrder[b.id]||a.name.localeCompare(b.name)||a.id.localeCompare(b.id):a.name.localeCompare(b.name)||a.id.localeCompare(b.id);});
+    var totalPages=Math.max(1,Math.ceil(records.length/12));this.page=Math.min(this.page,totalPages-1);
+    this.count.textContent=number(records.length)+' entries · '+difficulties[this.difficulty];
+    records.slice(this.page*12,this.page*12+12).forEach(function(r){self.card(r,self.grid);});
+    if(!records.length)this.grid.appendChild(node(this.document,'p','rmd-be-empty','No monsters match these filters. Try another area or difficulty.'));
+    function button(label,disabled,action){var b=node(self.document,'button','rmd-be-button',label);b.disabled=disabled;b.addEventListener('click',action);self.pages.appendChild(b);}
+    function move(delta){self.page+=delta;self.results();self.count.scrollIntoView({block:'start',behavior:'auto'});}
+    button('Previous',this.page===0,function(){move(-1);});this.pages.appendChild(node(this.document,'span','','Page '+(this.page+1)+' of '+totalPages));button('Next',this.page===totalPages-1,function(){move(1);});
+  };
+  Bestiary.prototype.render=function(parent,nextSibling){
+    this.parentDomNode=parent;this.computeAttributes();this.load();this.difficulty=2;this.scope='enemies';this.collection='';this.group='';this.family='';this.area='';this.act='';this.immune='';this.sort='area';this.query='';this.page=0;
+    var self=this,root=node(this.document,'div','rmd-bestiary'),id=this.getAttribute('id');
+    if(id){var r=this.records.find(function(r){return r.id===id;});if(r){this.select(root,'Difficulty',difficulties.map(function(v,i){return [String(i),v];}),'2',function(v){self.difficulty=Number(v);while(single.firstChild)single.removeChild(single.firstChild);self.card(r,single);});var single=node(this.document,'div','rmd-be-single');root.appendChild(single);this.card(r,single);}else root.appendChild(node(this.document,'p','','Monster definition not found.'));}
+    else {
+      var toolbar=node(this.document,'div','rmd-be-toolbar'),quick=node(this.document,'div','rmd-be-quick');
+      [['','All enemies'],['trials','Torment Trials'],['custom','Mod additions']].forEach(function(pair){var b=node(self.document,'button','rmd-be-button',pair[1]);b.setAttribute('aria-pressed',String(pair[0]===''));b.addEventListener('click',function(){self.collection=pair[0];Array.from(quick.children).forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});self.page=0;self.results();});quick.appendChild(b);});toolbar.appendChild(quick);
+      var main=node(this.document,'div','rmd-be-main-controls'),search=node(this.document,'input','rmd-be-search');search.type='search';search.placeholder='Search monsters, skills or areas…';search.setAttribute('aria-label','Search the Bestiary');search.addEventListener('input',function(){self.query=search.value.trim().toLowerCase();self.page=0;self.results();});main.appendChild(search);
+      this.select(main,'Difficulty',difficulties.map(function(v,i){return [String(i),v];}),'2',function(v){self.difficulty=Number(v);self.page=0;self.results();});toolbar.appendChild(main);
+      var filters=node(this.document,'details','rmd-be-filters');filters.appendChild(node(this.document,'summary','','Filter monsters'));var fields=node(this.document,'div','rmd-be-filter-fields');filters.appendChild(fields);
+      function filter(label,key,values){self.select(fields,label,values,self[key],function(v){self[key]=v;self.page=0;self.results();});}
+      filter('Show','scope',[['enemies','Hostile enemies'],['bosses','Bosses & superuniques'],['summons','Summons & allies'],['other','NPCs, helpers & disabled'],['all','Every definition']]);
+      filter('Type','group',[['','All types'],['Demon','Demons'],['Undead','Undead'],['Construct','Constructs'],['Other','Other types']]);
+      filter('Family','family',[['','All families']].concat([...new Set(this.records.map(function(r){return r.family;}))].sort().map(function(v){return [v,v];})));
+      filter('Act','act',[['','All acts'],['1','Act I'],['2','Act II'],['3','Act III'],['4','Act IV'],['5','Act V']]);
+      filter('Area','area',[['','All linked areas']].concat(this.data.areas.filter(function(a){return self.records.some(function(r){return r.locations.some(function(l){return l.area===a.id;});});}).sort(function(a,b){return a.act-b.act||a.name.localeCompare(b.name);}).map(function(a){return [a.id,'Act '+a.act+' · '+a.name];})));
+      filter('Immunity','immune',[['','Any resistance']].concat(resistanceNames.map(function(n,i){return [String(i),n+' immune'];})));
+      filter('Sort','sort',[['area','Encounter area'],['name','Name'],['family','Family'],['level','Reference level, high first']]);
+      var reset=node(this.document,'button','rmd-be-button','Reset filters');reset.addEventListener('click',function(){self.scope='enemies';self.group=self.family=self.area=self.act=self.immune=self.query=self.collection='';self.sort='area';self.page=0;search.value='';Array.from(fields.querySelectorAll('select')).forEach(function(s){s.selectedIndex=0;});Array.from(quick.children).forEach(function(b,i){b.setAttribute('aria-pressed',String(i===0));});self.results();});fields.appendChild(reset);toolbar.appendChild(filters);root.appendChild(toolbar);
+      this.count=node(this.document,'p','rmd-be-count');this.count.setAttribute('aria-live','polite');root.appendChild(this.count);this.grid=node(this.document,'div','rmd-be-grid');root.appendChild(this.grid);this.pages=node(this.document,'nav','rmd-be-pagination');this.pages.setAttribute('aria-label','Bestiary pages');root.appendChild(this.pages);this.results();
+    }
+    parent.insertBefore(root,nextSibling);this.domNodes.push(root);
+  };
+  Bestiary.prototype.refresh=function(changed){var attributes=this.computeAttributes();if(attributes.id||changed['$:/rmd/monster-data']){this.refreshSelf();return true;}return false;};
+  exports['rmd-bestiary']=Bestiary;
+})();

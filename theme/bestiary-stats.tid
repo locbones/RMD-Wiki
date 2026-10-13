@@ -1,0 +1,17 @@
+title: $:/rmd/bestiary-stats.js
+type: application/javascript
+module-type: library
+
+(function(){
+  'use strict';
+  var suffix=['','(N)','(H)'];
+  function value(row,key){var actual=Object.keys(row).find(function(k){return k.toLowerCase()===key.toLowerCase();});return Number(row[actual]||0);}
+  exports.calculate=function(record,difficulty,area,scaling){
+    var source=record.stats[difficulty],level=source.level;
+    if(difficulty>0&&!record.boss&&!record.noRatio&&area&&area.levels[difficulty]>0)level=area.levels[difficulty];
+    var scale=scaling[Math.max(0,Math.min(level,scaling.length-1))]||{},z=suffix[difficulty];
+    function scaled(number,type){return record.noRatio?number:Math.floor(number*value(scale,'L-'+type+z)/100);}
+    function damage(pair){return pair.map(function(n){return scaled(n,'DM');});}
+    return {level:level,hp:source.hp.map(function(n){return Math.min(scaled(n,'HP'),8388607);}),defense:scaled(source.defense,'AC'),experience:scaled(source.experience,'XP'),attacks:source.attacks.map(function(a){return {mode:a.mode,damage:damage(a.damage),rating:scaled(a.rating,'TH')};}),resists:source.resists,elements:source.elements.map(function(e){return {type:e.type,mode:e.mode,chance:e.chance,damage:damage(e.damage),frames:e.frames};}),properties:source.properties,block:source.block,coldEffect:source.coldEffect,drain:source.drain,treasure:source.treasure};
+  };
+})();

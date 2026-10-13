@@ -1,0 +1,36 @@
+{
+  "counts": {
+    "definitions": 942,
+    "superuniques": 80,
+    "hostile": 633,
+    "areas": 238,
+    "images": 266,
+    "decodedMaps": 2096,
+    "illustrations": 266,
+    "illustratedEntries": 882
+  },
+  "issues": [
+    {
+      "kind": "missing-string",
+      "key": "Worldstone Effect",
+      "fallback": "worldstoneeffect"
+    },
+    {
+      "kind": "missing-string",
+      "key": "LightGolem",
+      "fallback": "lightgolem"
+    },
+    {
+      "kind": "missing-string",
+      "key": "Countess Patreon",
+      "fallback": "Countess Patreon"
+    },
+    {
+      "kind": "missing-string",
+      "key": "The Mad King",
+      "fallback": "The Mad King"
+    }
+  ],
+  "renderFailures": [],
+  "illustrationWarnings": []
+}
