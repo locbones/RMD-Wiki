@@ -1,0 +1,147 @@
+title: $:/rmd/loot-comparison-ui.js
+type: application/javascript
+module-type: library
+
+'use strict';
+var sim=require('$:/rmd/loot-comparison.js'),math=require('$:/rmd/loot-engine.js'),picker=require('$:/rmd/loot-route-picker.js');
+function el(h,parent,tag,cls,text){var n=h.document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=String(text);parent.appendChild(n);return n;}
+function num(v){return Number.isFinite(v)?v>=1e7?v.toExponential(2):v.toLocaleString('en-US',{maximumFractionDigits:v<10?1:0}):'—';}
+function pct(v){if(v===0)return '0%';var n=v*100;return (n<.0001?n.toExponential(2):n.toLocaleString('en-US',{maximumFractionDigits:n<.01?6:n<1?4:2}))+'%';}
+function range(values,formatter){return formatter(values[0])+' – '+formatter(values[1]);}
+function bounded(v,min,max){return Math.max(min,Math.min(max,Number(v)||0));}
+function context(h,source,area,encounter){if(area&&!source.locations.some(function(l){return l.area===area&&l.difficulty===h.difficulty;}))source=Object.assign({},source,{locations:[{area:area,difficulty:h.difficulty,method:'Modeled encounter'}]});return h.engine.contexts(source,{difficulty:h.difficulty,area:area||'',encounter:encounter||'standard'});}
+function chance(h,c,item){return h.engine.calculate(c.table,item.id,{level:c.level,mf:h.mf,players:h.players,nearby:h.nearby,cow:c.source.monster==='hellbovine'}).chance;}
+function unit(h,source,item,area,mode){
+  if(!source)return null;
+  var encounter=mode==='minion'?'standard':mode||'standard',table=source.tc[h.difficulty]?.[encounter],c=context(h,source,area,encounter)[0],p=!table?0:c?chance(h,c,item):null;
+  if(c&&mode==='minion'){c=Object.assign({},c,{level:c.level+3});c.table=h.difficulty>0&&!source.boss&&!source.noRatio?h.engine.upgrade(c.originalTable,c.level):c.table;p=chance(h,c,item);}
+  return {id:source.monster,name:source.name,chance:p,table:c?.table,level:c?.level};
+}
+function member(h,id,item,area,trail){
+  var raw=h.data.spawnMonsters[id];if(!raw)return null;
+  var source=h.sourceMap.get('monster:'+id),m=Object.assign({},raw,unit(h,source,item,area,'standard')||{chance:null});
+  m.championChance=unit(h,source,item,area,'champion')?.chance;m.uniqueChance=unit(h,source,item,area,'unique')?.chance;
+  m.minion=unit(h,h.sourceMap.get('monster:'+(source?.minions||id)),item,area,'minion');
+  m.partyUnits=(raw.partyIds||[]).map(function(child){return unit(h,h.sourceMap.get('monster:'+child),item,area,'standard');});
+  if(raw.replacement&&!(trail||[]).includes(id))m.replacement=member(h,raw.replacement,item,area,(trail||[]).concat(id));else m.replacement=null;
+  return m;
+}
+function fixedEncounter(h,entry,item,area){
+  var source=h.sourceMap.get(entry.id);if(!source)return null;
+  var m=unit(h,source,item,area,'standard'),r=source.minionRange||[0,0],bonus=r[0]&&r[1]?h.difficulty:0;
+  return Object.assign({},entry,{monster:Object.assign(m,{id:source.id,onePerGame:source.onePerGame}),minion:source.kind==='superunique'?(unit(h,h.sourceMap.get('monster:'+source.minions),item,area,'minion')||{name:source.name+' minions',chance:null}):null,minionRange:[r[0]+bonus,r[1]+bonus]});
+}
+function configure(h,parent,state,index,item){
+  var letter=index?'B':'A',card=el(h,parent,'section','rmd-lc-card rmd-lc-'+letter.toLowerCase()),fields;
+  el(h,card,'h4','','Route '+letter);
+  function select(label,values,key){return h.select(fields,label+' '+letter,values,state[key],function(v){state[key]=v;h.queue();});}
+  function input(label,key,min,max,decimal){var n=h.numeric(fields,label+' '+letter,state[key],min,max,function(v){state[key]=bounded(v,min,max);h.queue();});if(decimal){n.step='0.1';n.inputMode='decimal';}return n;}
+  fields=el(h,card,'div','rmd-lc-fields');
+  select('Run type',[['area','Area clear'],['monster','Specific monster / boss']], 'kind');
+  var config={kind:state.kind,minutes:state.minutes,seed:h.comparison.seed,samples:h.comparison.samples};
+  if(state.kind==='area'){
+    var areas=h.data.areas.filter(function(a){return a.population.pools[h.difficulty?1:0].length&&a.population.types>0||a.population.fixed.length||a.population.fixedGroups.some(function(g){return g.variants.some(function(v){return v.encounters.length;});});});
+    if(!areas.some(function(a){return a.id===state.area;}))state.area=areas[0]?.id;
+    picker.choose(h,fields,'Area '+letter,areas.map(function(a){return {id:a.id,label:a.name,detail:'Act '+a.act+' · level '+a.levels[h.difficulty],search:['Act '+a.act,a.name,a.id].join(' '),act:a.act,level:a.levels[h.difficulty],density:a.population.density[h.difficulty]};}),state.area,function(v){state.area=v;h.queue();},[['name','Name A–Z'],['act','Act'],['level','Level ↓'],['density','Density ↓']]);
+    var area=h.engine.areas.get(state.area),population=area.population;
+    input('Minutes per run','minutes',.1,1440,true);config.minutes=state.minutes;
+    var badge=el(h,card,'p','rmd-lc-included',state.includeElites&&state.includeFixed?'Full clear · ordinary + elites + fixed encounters':'Custom clear · some encounter groups excluded');
+    var tuning=el(h,card,'details','rmd-lc-tuning');tuning.open=!!state.tuningOpen;tuning.addEventListener('toggle',function(){state.tuningOpen=tuning.open;});el(h,tuning,'summary','','Adjust clear assumptions');
+    var mainFields=fields;fields=el(h,tuning,'div','rmd-lc-fields');
+    select('Population',[['density','Automatic from mod files'],['manual','Override ordinary kill count']],'method');
+    if(state.method==='manual')input('Ordinary kills per run','kills',0,10000);else input('Population scale %','scale',0,300);
+    input('Map count variation ±%','spread',0,100);
+    function check(text,key){var label=el(h,fields,'label','rmd-lt-check'),n=el(h,label,'input');n.type='checkbox';n.checked=state[key];n.setAttribute('aria-label',text+' '+letter);n.addEventListener('change',function(){state[key]=n.checked;h.queue();});el(h,label,'span','',text);}
+    check('Include elite packs','includeElites');check('Include fixed encounters','includeFixed');fields=mainFields;
+    config.pool=population.pools[h.difficulty?1:0].map(function(id){return member(h,id,item,state.area);});
+    config.types=population.types;config.rangedFirst=population.rangedFirst;config.method=state.method;config.spread=state.spread;config.kills=state.kills;
+    config.packs=sim.densityPacks(population,h.difficulty)*(state.scale/100);config.name=area.name;
+    config.geometryFloor=population.geometry.floorTiles;
+    config.elites=state.includeElites;config.eliteRange=population.elitePacks[h.difficulty];config.championPercent=population.championPercent;
+    config.uniquePool=h.difficulty===0?population.uniquePool.map(function(id){var m=member(h,id,item,state.area);if(m)m.weight=1;return m;}):[];
+    config.fixed=state.includeFixed?population.fixed.map(function(e){return fixedEncounter(h,e,item,state.area);}):[];
+    config.fixedGroups=population.fixedGroups.map(function(g){return {variants:g.variants.map(function(v){return Object.assign({},v,{encounters:state.includeFixed?v.encounters.map(function(e){return fixedEncounter(h,e,item,state.area);}):[]});})};});
+    var density=population.density[h.difficulty],size=population.size[h.difficulty];
+    el(h,tuning,'p','rmd-lt-small','Mod density '+num(density)+' · '+size.join(' × ')+' nominal tiles · '+population.types+' random types · elite budget '+config.eliteRange.join('–')+' · '+population.championPercent+'% champion conversion.');
+    el(h,tuning,'p','rmd-lt-note',population.geometry.floorTiles!==null?'Population uses current map floor coverage where available. Floor tiles approximate populated space; collision and failed placement can reduce actual spawns.':'Procedural map geometry uses an automatic 20% footprint approximation. Density, monster types and pack ranges come from the mod; exact room geometry is not reconstructed.');
+    if(config.pool.some(function(m){return !m;}))config.error='A configured spawn definition is missing.';
+    else if(config.pool.some(function(m){return m.isSpawn&&m.weight>0&&(m.chance===null||m.replacement&&m.replacement.chance===null);}))config.error='This area includes an unsupported monster loot binding. Choose a supported monster or another area.';
+    var details=el(h,card,'details','rmd-lc-pool');el(h,details,'summary','','Included encounter details');
+    var fixedEntries=config.fixed.concat(config.fixedGroups.flatMap(function(g){return g.variants.flatMap(function(v){return v.encounters;});})),seen=new Set();
+    fixedEntries.filter(Boolean).forEach(function(e){if(seen.has(e.monster.id))return;seen.add(e.monster.id);el(h,details,'p','rmd-lt-small',e.monster.name+' · '+(e.monster.onePerGame?'once per game':e.count+' fixed placements')+(e.minionRange[1]?' + '+e.minionRange.join('–')+' minions':'')+' · '+e.evidence);});
+    if(state.includeElites)el(h,details,'p','rmd-lt-small','Random elites: '+config.eliteRange.join('–')+' budget, including preset uniques already present. Champion groups: 2–4; random unique minions: 3–6.');
+    config.pool.filter(Boolean).forEach(function(m){el(h,details,'p','rmd-lt-small',m.name+' ('+m.id+') · '+(m.chance===null?'unsupported':pct(m.chance))+' ordinary drop chance · pack '+m.min+'–'+m.max);});
+  }else{
+    var sources=h.data.sources.slice().sort(function(a,b){return Number(b.kind!=='monster')-Number(a.kind!=='monster')||a.name.localeCompare(b.name)||a.id.localeCompare(b.id);});
+    picker.choose(h,fields,'Monster '+letter,sources.map(function(s){return {id:s.id,label:s.name+' ('+s.monster+')',detail:s.kind==='superunique'?'Named unique':s.kind==='boss'?'Boss':'Monster',search:s.search,level:s.levels[h.difficulty]};}),state.source,function(v){state.source=v;h.queue();});
+    var source=h.sourceMap.get(state.source);
+    if(source?.kind==='superunique')state.encounter='standard';
+    var encounterChoices=source?.kind==='superunique'?[['standard','Named superunique']]:[['standard','Standard'],['champion','Champion'],['unique','Unique'],['quest','Quest drop']].filter(function(e){return !!source?.tc[h.difficulty]?.[e[0]];});
+    if(!encounterChoices.some(function(e){return e[0]===state.encounter;}))state.encounter=encounterChoices[0]?.[0]||'standard';
+    if(encounterChoices.length>1)select('Drop encounter',encounterChoices,'encounter');
+    var contexts=source?context(h,source,'',state.encounter):[];
+    if(contexts.length&&!contexts.some(function(c){return (c.area?.id||'reference')===state.location;}))state.location=contexts[0].area?.id||'reference';
+    if(contexts.length>1)picker.choose(h,fields,'Location '+letter,contexts.map(function(c){return {id:c.area?.id||'reference',label:c.area?.name||'Unmapped reference',detail:'Monster level '+c.level,level:c.level};}),state.location,function(v){state.location=v;h.queue();});
+    var locked=sim.limitKills(source,state.encounter,2)===1;state.kills=sim.limitKills(source,state.encounter,state.kills);
+    var killInput=input('Kills per run','kills',locked?1:0,locked?1:10000);killInput.disabled=locked;
+    input('Minutes per run','minutes',.1,1440,true);config.minutes=state.minutes;config.onePerGame=locked;
+    var c=contexts.find(function(c){return (c.area?.id||'reference')===state.location;});
+    config.id=state.source;config.kills=state.kills;config.name=source?.name||'Choose a monster';config.chance=c?chance(h,c,item):null;
+    if(!c)config.error='No supported drop table for this encounter and difficulty.';
+    el(h,card,'p','rmd-lt-small',c?(c.area?.name||'Unmapped reference')+' · level '+c.level+' · '+pct(config.chance)+' per kill.':'Select another monster or encounter.');
+    el(h,card,'p','rmd-lc-included',locked?'Once per game · 1 kill per run':'Specified kills · one game per run');
+  }
+  return config;
+}
+function chart(h,parent,results){
+  var box=el(h,parent,'section','rmd-lc-outlook'),head=el(h,box,'div','rmd-lc-chart-head');el(h,head,'h4','','Chance of finding at least one');
+  h.select(head,'Comparison graph',[['runs','Same number of runs'],['time','Same time spent']],h.comparison.axis,function(v){h.comparison.axis=v;h.queue();});
+  var time=h.comparison.axis==='time',horizon=time?h.comparison.hours*60:h.runs;
+  if(time){var hours=h.numeric(head,'Hours to compare',h.comparison.hours,1,10000,function(v){h.comparison.hours=bounded(v,1,10000);h.queue();});hours.step='1';}
+  var ns='http://www.w3.org/2000/svg',svg=h.document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 520 230');svg.setAttribute('role','img');svg.setAttribute('aria-label','Cumulative drop chance for routes A and B against '+(time?'time':'completed runs'));box.appendChild(svg);
+  function shape(tag,attributes,text){var n=h.document.createElementNS(ns,tag);Object.keys(attributes).forEach(function(k){n.setAttribute(k,attributes[k]);});if(text!=null)n.textContent=text;svg.appendChild(n);return n;}
+  function probability(r,x){return math.cumulative(r.chance,Math.floor(time?x/r.minutes:x));}
+  var peak=Math.max.apply(null,results.map(function(r){return r?probability(r,horizon):0;})),magnitude=peak>0?Math.pow(10,Math.floor(Math.log10(peak))):1,scaled=peak/magnitude,ceiling=Math.min(1,(scaled<=1?1:scaled<=2?2:scaled<=5?5:10)*magnitude);
+  [0,.5,1].forEach(function(f){var y=190-f*170;shape('line',{x1:100,x2:502,y1:y,y2:y,stroke:'#4d3a2b','stroke-width':1});shape('text',{x:92,y:y+4,'text-anchor':'end',fill:'#bba483','font-size':11},f*ceiling>0&&f*ceiling<.0001?(f*ceiling*100).toExponential(0)+'%':pct(f*ceiling));});
+  [0,.5,1].forEach(function(f){shape('text',{x:100+402*f,y:212,'text-anchor':f===0?'start':f===1?'end':'middle',fill:'#bba483','font-size':11},num(f*horizon/(time?60:1))+(time?' h':' runs'));});
+  results.forEach(function(r,i){if(!r)return;var points=[];for(var n=0;n<=100;n++){var p=probability(r,n/100*horizon);points.push((100+402*n/100).toFixed(2)+','+(190-170*p/ceiling).toFixed(2));}shape('polyline',{points:points.join(' '),fill:'none',stroke:i?'#73c8c0':'#edc177','stroke-width':2.5,'stroke-dasharray':i?'6 3':'none'});});
+  var legend=el(h,box,'div','rmd-lc-legend');results.forEach(function(r,i){el(h,legend,'span','rmd-lc-'+(i?'b':'a'),(i?'B':'A')+' · '+(r?pct(probability(r,horizon)):'Unavailable')+' at '+num(horizon/(time?60:1))+(time?' hours':' runs'));});
+  el(h,box,'p','rmd-lt-chart-note','One fresh game per run. Times include your loading, travel and clear time. Curves average the modeled populations; they are estimates.');
+}
+exports.draw=function(h){
+  h.analysis=null;
+  if(!h.comparison||h.comparison.version!==2)h.comparison={version:2,seed:2026,samples:2000,axis:'runs',hours:10,routes:[{kind:'area',area:'108',method:'density',scale:100,kills:300,spread:25,includeElites:true,includeFixed:true,minutes:6,source:'monster:doomknight3',encounter:'standard',location:''},{kind:'monster',area:'108',method:'density',scale:100,kills:1,spread:25,includeElites:true,includeFixed:true,minutes:2,source:'monster:diablo',encounter:'standard',location:''}]};
+  var item=h.itemMap.get(h.itemId);if(!item)return;h.selectionHeader(item,true);
+  el(h,h.detail,'p','rmd-lt-note','Choose two routes. Full clears load ordinary packs, elites, minions and known fixed encounters from the mod. Set only your run time; each run is one fresh game.');
+  if(!item.enabled||item.recipeOnly){h.drawCrafting(item);return;}
+  var cards=el(h,h.detail,'div','rmd-lc-routes'),configs=h.comparison.routes.map(function(s,i){return configure(h,cards,s,i,item);}),results=[];
+  configs.forEach(function(config,i){var card=cards.children[i],result;try{if(config.error)throw Error(config.error);result=sim.simulate(config);}catch(e){el(h,card,'p','rmd-lt-message',e.message);results.push(null);return;}results.push(result);
+    if(!result.chance)el(h,card,'p','rmd-lt-note','No modeled chance for this target with the selected route. A dash means the estimate is not finite.');
+  });
+  var panel=el(h,h.detail,'section','rmd-lc-comparison'),table=el(h,panel,'table','rmd-lc-matrix');el(h,table,'caption','','Compare your routes');
+  var head=el(h,el(h,table,'thead'),'tr');['Per fresh game','A · '+configs[0].name,'B · '+configs[1].name].forEach(function(text){var th=el(h,head,'th','',text);th.scope='col';});var body=el(h,table,'tbody');
+  [['Drop chance',function(r){return pct(r.chance);}],['Average kills',function(r){return num(r.meanKills);}],['Expected runs',function(r){return num(r.expectedRuns);}],['Runs for 50%',function(r){return num(r.median);}],['Runs for 90%',function(r){return num(r.ninety);}],['Expected time',function(r){return num(r.expectedMinutes/60)+' h';}],['At '+num(h.runs)+' runs',function(r){return pct(math.cumulative(r.chance,h.runs));}]].forEach(function(row){var tr=el(h,body,'tr'),th=el(h,tr,'th','',row[0]);th.scope='row';results.forEach(function(r,i){el(h,tr,'td','rmd-lc-'+(i?'b':'a'),r?row[1](r):'Unavailable');});});
+  var breakdown=el(h,panel,'details','rmd-lc-breakdown');el(h,breakdown,'summary','','Population breakdown & map variation');
+  var breakdownRow=el(h,breakdown,'div','rmd-lc-routes');results.forEach(function(r,i){var box=el(h,breakdownRow,'div');el(h,box,'h4','',i?'Route B':'Route A');if(!r){el(h,box,'p','','Unavailable');return;}
+    if(r.samples){el(h,box,'p','rmd-lt-small','Middle 80% of maps: '+range(r.killsRange,num)+' kills · '+range(r.chanceRange,pct)+' drop chance.');var c=r.components;el(h,box,'p','rmd-lt-small',num(c.ordinary)+' ordinary · '+num(c.champion+c.unique)+' random elites · '+num(c.minion)+' elite minions · '+num(c.fixed)+' fixed encounters.');}
+    var details=el(h,box,'details','rmd-lc-pool');el(h,details,'summary','','Kills by monster');r.mix.forEach(function(m){el(h,details,'p','rmd-lt-small',(h.sourceMap.get(m.id)?.name||h.data.spawnMonsters[m.id]?.name||m.id)+' · '+num(m.kills)+' kills / run');});
+  });
+  var a=results[0],b=results[1],verdict=el(h,h.detail,'div','rmd-lc-verdict');
+  if(a&&b&&a.chance>0&&b.chance>0){
+    var winner=a.chance>=b.chance?'A':'B',best=winner==='A'?a:b,worse=winner==='A'?b:a,runSaving=(1-best.expectedRuns/worse.expectedRuns)*100;
+    el(h,verdict,'strong','',runSaving<.05?'The routes need about the same number of runs.':'Route '+winner+' needs about '+num(runSaving)+'% fewer runs.');
+    var faster=a.expectedMinutes<=b.expectedMinutes?'A':'B',fast=faster==='A'?a:b,slow=faster==='A'?b:a,timeSaving=(1-fast.expectedMinutes/slow.expectedMinutes)*100;
+    el(h,verdict,'p','',timeSaving<.05?'Expected time is about equal at your selected pace.':'Route '+faster+' takes about '+num(timeSaving)+'% less expected time at your selected pace.');
+  }else el(h,verdict,'p','','Both routes need supported, positive drop chances for an efficiency comparison.');
+  chart(h,h.detail,results);
+  var options=el(h,h.detail,'details','rmd-lc-method');options.open=!!h.comparison.optionsOpen;options.addEventListener('toggle',function(){h.comparison.optionsOpen=options.open;});el(h,options,'summary','','Simulation options');var controls=el(h,options,'div','rmd-lc-controls');
+  h.select(controls,'Sampled maps',[['500','500 · quick'],['2000','2,000 · standard'],['5000','5,000 · detailed']],h.comparison.samples,function(v){h.comparison.samples=Number(v);h.queue();});
+  h.numeric(controls,'Simulation seed',h.comparison.seed,0,4294967295,function(v){h.comparison.seed=bounded(v,0,4294967295);h.queue();});h.button(controls,'Reroll maps',function(){h.comparison.seed=(h.comparison.seed+1)>>>0;h.queue();});
+  var method=el(h,h.detail,'details','rmd-lc-method');el(h,method,'summary','','Simulation assumptions');
+  el(h,method,'p','','Area mode loads per-difficulty density, level dimensions, NumMon/type pools, elite ranges, monster Rarity, group sizes and champion chance from current mod files. NumMon types are selected without replacement (up to 13), including ranged-first selection. Pack sizes include the standard Fallen/Scarab exception. Sparse checks and place-spawn replacements apply. Manual budgets override ordinary kills only.');
+  el(h,method,'p','','Elite allocation approximates MonUMin/MonUMax as a sampled unique-unit budget, subtracting preset named uniques already counted. Champions convert using monumod.txt constants and spawn groups of 2–4; unique leaders have 3–6 minions. Champion members consume the budget individually. Elite events replace ordinary density events. Normal elite types use umon pools where present; other difficulties use selected rarity-weighted types. Minions use ordinary loot tables at +3 levels; champions/unique leaders use their own tables and levels. Named-superunique minion ranges come from superuniques.txt, with the difficulty increment when both bounds are nonzero. Placement failures and room-by-room elite allocation remain approximations.');
+  el(h,method,'p','','Current DS1 objects resolve through monpreset.txt and lvlprest.txt. Alternative files are sampled as alternatives, not summed. Named uniques and bosses are deduplicated and capped at one per game, including across quest and map bindings. Campaign bosses, Chaos seal bosses and Throne waves use verified engine hooks with current table identities; Travincal uses its six authored map parts. Boss-only maps are supported without ordinary pools. These assume you activate and finish their encounters. Unlinked dynamic markers, skill summons and external scripts remain outside the model.');
+  el(h,method,'p','','Density is capped at 10,000; nominal tiles contain 5 × 5 subtiles and ordinary attempts occur about once per 3 × 3 subtiles. Linked preset maps use their current nonempty floor coverage and Populate flag. Procedural maps use a disclosed 20% nominal-footprint approximation. Floor coverage is not a collision map. Poisson density counts and a default ±25% count variation represent rough placement/layout uncertainty. These are automatic starting estimates, not a reconstruction of live game geometry. Population scale and ordinary kill budgets are optional adjustments.');
+  el(h,method,'p','','Each sampled map combines its kills as 1 − product((1 − per-kill chance)^kill count). These conditional probabilities are averaged, so rare drops remain measurable without waiting for lucky loot rolls. Expected runs = 1 / mean run chance; the 50%/90% figures use independent fresh runs. The middle 80% is variation between sampled maps, not a confidence interval for the model. Seed controls reproducibility; more samples reduce sampling noise, not map-model uncertainty.');
+  el(h,method,'p','','Each run is one fresh game. Named uniques, bosses and selected unique encounters are restricted to one direct kill per run. Ordinary kill counts remain adjustable. Run duration is your full loading/travel/combat time; populations come from the mod and the displayed geometry assumptions. Direct routes use their own encounter/location controls. General Advanced filters do not apply here.');
+};

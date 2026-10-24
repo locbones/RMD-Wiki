@@ -1,0 +1,26 @@
+title: $:/rmd/loot-route-picker.js
+type: application/javascript
+module-type: library
+
+'use strict';
+exports.choose=function(h,parent,label,choices,value,action,orders){
+  var states=h.comparison.pickers||(h.comparison.pickers={}),state=states[label]||(states[label]={query:'',order:'name',page:0,open:false});
+  function add(parent,tag,cls,text){var n=h.document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;parent.appendChild(n);return n;}
+  var field=add(parent,'div','rmd-lc-pick-field'),caption=add(field,'span','rmd-lc-pick-label',label),details=add(field,'details','rmd-lc-picker'),selected=choices.find(function(c){return c.id===value;}),summary=add(details,'summary','',selected?.label||'Choose an option');
+  summary.setAttribute('aria-label','Choose '+label);details.open=state.open;details.addEventListener('toggle',function(){state.open=details.open;});
+  var panel=add(details,'div','rmd-lc-picker-panel');
+  var input=h.search(panel,'Filter '+label,'Type a name, location or internal ID…',state.query,function(v){state.query=v;state.page=0;draw();});
+  var sorting=add(panel,'div','rmd-lc-sort'),list=add(panel,'div','rmd-lc-options'),status=add(panel,'p','rmd-lt-small'),pages=add(panel,'div','rmd-lt-pages');status.setAttribute('aria-live','polite');
+  var buttons=(orders||[['name','Name A–Z'],['level','Level ↓']]).map(function(order){var b=h.button(sorting,order[1],function(){state.order=order[0];state.page=0;draw();});b.setAttribute('aria-label','Sort '+label+' by '+order[1]);return {button:b,key:order[0]};}),filtered=[];
+  function pick(c){state.open=false;details.open=false;action(c.id);}
+  function draw(){
+    var words=state.query.toLowerCase().trim().split(/\s+/).filter(Boolean);filtered=choices.filter(function(c){var text=(c.search||c.label).toLowerCase();return words.every(function(word){return text.includes(word);});}).sort(function(a,b){return (state.order==='level'?(b.level||0)-(a.level||0):state.order==='density'?(b.density||0)-(a.density||0):state.order==='act'?(a.act||0)-(b.act||0):0)||a.label.localeCompare(b.label)||a.id.localeCompare(b.id);});
+    buttons.forEach(function(b){b.button.setAttribute('aria-pressed',String(b.key===state.order));});
+    list.textContent='';pages.textContent='';var total=Math.max(1,Math.ceil(filtered.length/8));state.page=Math.min(state.page,total-1);
+    filtered.slice(state.page*8,state.page*8+8).forEach(function(c){var b=h.button(list,c.label,function(){pick(c);},'rmd-lc-option');b.setAttribute('aria-pressed',String(c.id===value));if(c.detail)add(b,'small','',c.detail);});
+    status.textContent=filtered.length+' matches'+(!filtered.length?' · try a shorter name':'');
+    if(total>1){var previous=h.button(pages,'‹',function(){state.page--;draw();});previous.disabled=state.page===0;previous.setAttribute('aria-label','Previous '+label+' matches');add(pages,'span','',(state.page+1)+' / '+total);var next=h.button(pages,'›',function(){state.page++;draw();});next.disabled=state.page===total-1;next.setAttribute('aria-label','Next '+label+' matches');}
+  }
+  input.addEventListener('keydown',function(e){if(e.key==='Enter'&&filtered.length===1){e.preventDefault();pick(filtered[0]);}else if(e.key==='Escape'){e.preventDefault();details.open=false;summary.focus();}else if(e.key==='ArrowDown'){e.preventDefault();list.querySelector('button')?.focus();}});
+  draw();return details;
+};

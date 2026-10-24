@@ -1,0 +1,190 @@
+title: $:/rmd/loot-widget.js
+type: application/javascript
+module-type: widget
+
+(function(){
+  'use strict';
+  var Widget=require('$:/core/modules/widgets/widget.js').widget,math=require('$:/rmd/loot-engine.js');
+  var labels={base:'Base / material',unique:'Unique',set:'Set item',runeword:'Runeword'},diffs=['Normal','Nightmare','Hell'];
+  function node(doc,tag,cls,text){var el=doc.createElement(tag);if(cls)el.className=cls;if(text!=null)el.textContent=String(text);return el;}
+  function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
+  function percent(p){if(p<=0)return '0%';if(p>=1)return '100%';var v=p*100;return (v<.0001?v.toExponential(2):v.toLocaleString('en-US',{maximumFractionDigits:v<.01?6:v<1?4:2}))+'%';}
+  function count(n){return !Number.isFinite(n)?'—':Math.round(n).toLocaleString('en-US');}
+  function oneIn(p){return p>0?(p>=1?'1':(1/p).toLocaleString('en-US',{maximumFractionDigits:1})):'—';}
+  function key(c){return c.source.id+'|'+(c.area?.id||'reference');}
+  function Loot(tree,opts){this.initialise(tree,opts);}
+  Loot.prototype=new Widget();
+  Loot.prototype.load=function(){
+    this.data=this.wiki.getTiddlerData('$:/rmd/loot-data',null);if(!this.data)return;
+    this.engine=new math.Engine(this.data);this.itemMap=this.engine.items;
+    this.sources=this.data.sources.concat(this.data.classes.map(t=>({id:'table:'+t.name,kind:'table',name:t.name,table:t.name,monster:'',search:(t.name+' loot table '+(t.generated?'equipment pool':'')).toLowerCase(),source:t.source})));
+    this.sourceMap=new Map(this.sources.map(s=>[s.id,s]));this.images=new Map();
+  };
+  Loot.prototype.button=function(parent,text,action,cls){var b=node(this.document,'button','rmd-lt-button '+(cls||''),text);b.type='button';b.addEventListener('click',action);parent.appendChild(b);return b;};
+  Loot.prototype.link=function(parent,title,text){if(!title)return;var a=node(this.document,'a','rmd-lt-link',text),self=this;a.href='#'+encodeURIComponent(title);a.addEventListener('click',function(e){e.preventDefault();self.dispatchEvent({type:'tm-navigate',navigateTo:title,navigateFromTitle:self.getVariable('currentTiddler'),navigateFromNode:a,navigateSuppressNavigation:false,event:e});});parent.appendChild(a);return a;};
+  Loot.prototype.select=function(parent,label,values,value,action){var wrap=node(this.document,'label','rmd-lt-field'),sel=node(this.document,'select');wrap.appendChild(node(this.document,'span','',label));sel.setAttribute('aria-label',label);values.forEach(function(v){var o=node(this.document,'option','',v[1]);o.value=v[0];sel.appendChild(o);},this);sel.value=String(value);sel.addEventListener('change',function(){action(sel.value);});wrap.appendChild(sel);parent.appendChild(wrap);return sel;};
+  Loot.prototype.numeric=function(parent,label,value,min,max,action){var wrap=node(this.document,'label','rmd-lt-field'),input=node(this.document,'input');wrap.appendChild(node(this.document,'span','',label));input.type='number';input.min=String(min);input.max=String(max);input.step='1';input.value=value;input.inputMode='numeric';input.setAttribute('aria-label',label);input.addEventListener('input',function(){action(input.value);});wrap.appendChild(input);parent.appendChild(wrap);return input;};
+  Loot.prototype.search=function(parent,label,placeholder,value,action){var input=node(this.document,'input','rmd-lt-search');input.type='search';input.placeholder=placeholder;input.value=value;input.setAttribute('aria-label',label);var timer;input.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(function(){action(input.value);},130);});parent.appendChild(input);return input;};
+  Loot.prototype.image=function(parent,item,large){var box=node(this.document,'span','rmd-lt-icon'+(large?' rmd-lt-icon-large':''));var uri=this.images.get(item.image);if(uri===undefined){var t=item.image&&this.wiki.getTiddler(item.image);uri=t?'data:'+t.fields.type+';base64,'+t.fields.text:null;this.images.set(item.image,uri);}if(uri){var img=node(this.document,'img');img.src=uri;img.alt='';img.loading='lazy';img.width=large?64:32;img.height=large?64:32;box.appendChild(img);}else box.appendChild(node(this.document,'span','','◇'));parent.appendChild(box);};
+  Loot.prototype.kindMatches=function(i,kind){if(kind==='all')return true;if(['base','unique','set','runeword'].includes(kind))return i.kind===kind;var types=this.data.bases[i.code]?.types||[];return i.kind==='base'&&(kind==='rune'?types.includes('rune'):kind==='gem'?types.includes('gem'):i.category===kind);};
+  Loot.prototype.kindValues=function(){return [['all','All loot'],['unique','Uniques'],['set','Set items'],['rune','Runes'],['gem','Gems'],['base','Bases & materials'],['weapon','Weapon bases'],['armor','Armor bases'],['runeword','Runewords']];};
+  Loot.prototype.settings=function(){return {difficulty:this.difficulty,mf:this.mf,players:this.players,nearby:this.nearby,encounter:this.encounter,area:this.area,levelOverride:this.levelOverride};};
+  Loot.prototype.calc=function(context,item){return this.engine.calculate(context.table,item.id,{level:context.level,mf:this.mf,players:this.players,nearby:this.nearby,cow:context.source.monster==='hellbovine'});};
+  Loot.prototype.queue=function(){var self=this;clearTimeout(this.settingTimer);this.settingTimer=setTimeout(function(){self.resultPage=0;self.update();},170);};
+  Loot.prototype.chooseItem=function(id){this.itemId=id;this.focusedKey='';if(this.mode==='source')this.switchMode('item');else{this.drawPicker();this.update();}if(this.viewportQuery?.matches)this.pickerShell.open=false;};
+  Loot.prototype.chooseSource=function(id){this.sourceId=id;this.contextChoice='';this.focusedKey='';if(this.sourceMap.get(id)?.kind==='table'&&this.area){this.area='';this.areaSelect.value='';}if(this.mode!=='source')this.switchMode('source');else{this.drawPicker();this.update();}if(this.viewportQuery?.matches)this.pickerShell.open=false;};
+  Loot.prototype.switchMode=function(mode){this.mode=mode;this.advanced.hidden=mode==='comparison';this.pickerPage=this.resultPage=0;this.resultQuery='';this.tabs.forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.mode===mode));});this.buildPicker();this.update();};
+  Loot.prototype.buildPicker=function(){
+    clear(this.picker);var self=this;
+    this.picker.appendChild(node(this.document,'h3','rmd-lt-pane-title',this.mode!=='source'?'Find your loot':'Choose a source'));
+    this.search(this.picker,this.mode!=='source'?'Search loot':'Search loot sources',this.mode!=='source'?'Name, base, rune, or item code…':'Monster, internal name, or table…',this.mode!=='source'?this.itemQuery:this.sourceQuery,function(v){if(self.mode!=='source')self.itemQuery=v;else self.sourceQuery=v;self.pickerPage=0;self.drawPicker();});
+    var fields=node(this.document,'div','rmd-lt-picker-fields');this.picker.appendChild(fields);
+    if(this.mode!=='source')this.select(fields,'Loot category',this.kindValues(),this.itemKind,function(v){self.itemKind=v;self.pickerPage=0;self.drawPicker();});
+    else this.select(fields,'Source category',[['all','All sources'],['boss','Bosses'],['superunique','Named superuniques'],['monster','Ordinary monsters'],['table','Loot tables']],this.sourceKind,function(v){self.sourceKind=v;self.pickerPage=0;self.drawPicker();});
+    this.select(fields,'Browse order',[['type','Type & name'],['name','Name A–Z'],['level','Item level, high first']],this.pickerSort,function(v){self.pickerSort=v;self.pickerPage=0;self.drawPicker();});
+    this.pickerCount=node(this.document,'p','rmd-lt-small');this.pickerCount.setAttribute('aria-live','polite');this.picker.appendChild(this.pickerCount);
+    this.pickerList=node(this.document,'div','rmd-lt-picker-list');this.pickerList.setAttribute('aria-label',this.mode!=='source'?'Loot choices':'Drop source choices');this.picker.appendChild(this.pickerList);
+    this.pickerPages=node(this.document,'nav','rmd-lt-pages');this.pickerPages.setAttribute('aria-label','Loot browser pages');this.picker.appendChild(this.pickerPages);this.drawPicker();
+  };
+  Loot.prototype.drawPicker=function(){
+    var self=this,query=(this.mode!=='source'?this.itemQuery:this.sourceQuery).toLowerCase().trim();
+    this.pickerSummary.textContent=(this.mode!=='source'?'Choose loot · ':'Choose source · ')+(this.mode!=='source'?this.itemMap.get(this.itemId)?.name:this.sourceMap.get(this.sourceId)?.name||'Browse');
+    var entries=this.mode!=='source'?this.data.items.filter(function(i){return self.kindMatches(i,self.itemKind)&&(!query||i.search.includes(query));}):this.sources.filter(function(s){return (self.sourceKind==='all'||s.kind===self.sourceKind)&&(!query||s.search.includes(query));});
+    var kindOrder={unique:0,set:1,runeword:2,base:3,boss:0,superunique:1,monster:2,table:3};
+    entries.sort(function(a,b){return (self.pickerSort==='type'?(kindOrder[a.kind]||0)-(kindOrder[b.kind]||0):self.pickerSort==='level'?(b.level||0)-(a.level||0):0)||a.name.localeCompare(b.name)||a.id.localeCompare(b.id);});
+    var total=Math.max(1,Math.ceil(entries.length/12));this.pickerPage=Math.min(this.pickerPage,total-1);this.pickerCount.textContent=count(entries.length)+(this.mode!=='source'?' loot entries':' sources');clear(this.pickerList);clear(this.pickerPages);
+    entries.slice(this.pickerPage*12,this.pickerPage*12+12).forEach(function(e){
+      var b=self.button(self.pickerList,'',function(){if(self.mode!=='source')self.chooseItem(e.id);else self.chooseSource(e.id);},'rmd-lt-choice');b.setAttribute('aria-pressed',String(e.id===(self.mode!=='source'?self.itemId:self.sourceId)));
+      if(self.mode!=='source')self.image(b,e,false);
+      var text=node(self.document,'span','rmd-lt-choice-text');text.appendChild(node(self.document,'strong','rmd-lt-'+(e.kind||'base'),e.name));
+      text.appendChild(node(self.document,'small','',self.mode!=='source'?(labels[e.kind]+(e.code?' · '+e.code:'')+(!e.enabled?' · disabled':e.recipeOnly?' · crafting':'')):(e.kind==='table'?'Loot table':e.monster+' · '+(e.kind==='superunique'?'named unique':e.kind))));b.appendChild(text);
+    });
+    if(!entries.length)this.pickerList.appendChild(node(this.document,'p','rmd-lt-note','No matches. Try an item code or a shorter name.'));
+    var prev=this.button(this.pickerPages,'‹',function(){self.pickerPage--;self.drawPicker();});prev.setAttribute('aria-label','Previous loot choices');prev.disabled=this.pickerPage===0;
+    this.pickerPages.appendChild(node(this.document,'span','',''+(this.pickerPage+1)+' / '+total));var next=this.button(this.pickerPages,'›',function(){self.pickerPage++;self.drawPicker();});next.setAttribute('aria-label','Next loot choices');next.disabled=this.pickerPage===total-1;
+  };
+  Loot.prototype.update=function(){
+    var activeFilters=Number(!!this.area)+Number(this.encounter!=='standard')+Number(!!this.levelOverride)+Number(!!this.mappedOnly);this.advancedSummary.textContent='Advanced filters'+(activeFilters?' · '+activeFilters+' active':'');
+    var self=this,generation=++this.generation,active=this.document.activeElement,focusLabel=this.mode==='comparison'&&this.detail.contains(active)?active.getAttribute('aria-label'):null;clear(this.detail);this.detail.appendChild(node(this.document,'p','rmd-lt-loading','Calculating loot…'));this.detail.setAttribute('aria-busy','true');
+    setTimeout(function(){if(generation!==self.generation)return;try{self.drawDetail();if(focusLabel){var control=Array.from(self.detail.querySelectorAll('[aria-label]')).find(function(n){return n.getAttribute('aria-label')===focusLabel;});control?.focus({preventScroll:true});}}catch(e){clear(self.detail);self.detail.appendChild(node(self.document,'p','rmd-lt-note','This calculation is unavailable: '+e.message));}self.detail.setAttribute('aria-busy','false');},0);
+  };
+  Loot.prototype.selectionHeader=function(entry,isItem){
+    var head=node(this.document,'div','rmd-lt-selected');if(isItem)this.image(head,entry,true);
+    var copy=node(this.document,'div');copy.appendChild(node(this.document,'span','rmd-lt-eyebrow',isItem?'TARGET LOOT':'DROP SOURCE'));copy.appendChild(node(this.document,'h3','rmd-lt-'+entry.kind,entry.name));
+    copy.appendChild(node(this.document,'p','rmd-lt-small',isItem?(labels[entry.kind]+(entry.kind!=='base'&&entry.baseName?' · '+entry.baseName:'')+(entry.code?' · '+entry.code:'')):(entry.kind==='table'?'Loot table · per execution':'('+entry.monster+') · '+(entry.kind==='superunique'?'Named superunique':entry.kind))));
+    this.link(copy,entry.title,isItem?'Item details ↗':'Bestiary entry ↗');head.appendChild(copy);this.detail.appendChild(head);
+  };
+  Loot.prototype.drawCrafting=function(item){
+    var self=this,box=node(this.document,'div','rmd-lt-message');box.appendChild(node(this.document,'h4','',!item.enabled?'Disabled definition':item.kind==='runeword'?'Made with runes':item.recipeOnly?'Forsaken Pact · cube-only':'Crafting route'));
+    box.appendChild(node(this.document,'p','rmd-lt-note',!item.enabled?'This definition is disabled in the current item tables.':item.kind==='runeword'?'Runewords are assembled in a compatible socketed base. Ingredients below cover enabled variants; see Item details for each ordered sequence. Select an ingredient to find its drop sources.':item.recipeOnly?'This set piece is forged through cube recipes. It is excluded from ordinary drop calculations.':'No qualifying monster drop was found. These creation recipes are configured for the item.'));
+    if(item.components?.length){var ingredients=node(this.document,'div','rmd-lt-ingredients');item.components.forEach(function(code){var i=self.itemMap.get('base:'+code);if(i){var b=self.button(ingredients,'',function(){self.chooseItem(i.id);},'rmd-lt-ingredient');self.image(b,i,false);b.appendChild(node(self.document,'span','',i.name));}});box.appendChild(ingredients);}
+    item.recipes.slice(0,8).forEach(function(r){var details=node(self.document,'details','rmd-lt-recipe');details.appendChild(node(self.document,'summary','',r.name||'Cube recipe'));var body=node(self.document,'div');r.inputs.forEach(function(input){var parts=input.replace(/"/g,'').split(','),code=parts[0],i=self.data.items.find(function(x){return x.code===code&&x.kind==='base'||x.key===code;});var p=node(self.document,'p','rmd-lt-small',(parts.find(function(x){return x.startsWith('qty=');})?.slice(4)||'1')+' × ');if(i)self.button(p,i.name,function(){self.chooseItem(i.id);},'rmd-lt-text-button');else p.appendChild(node(self.document,'span','',self.data.types[code]||code));var flags=parts.slice(1).filter(function(x){return !x.startsWith('qty=');});if(flags.length)p.appendChild(node(self.document,'span','',' ('+flags.join(', ')+')'));body.appendChild(p);});if(r.condition)body.appendChild(node(self.document,'p','rmd-lt-small','Additional recipe conditions apply. See the recipe reference.'));self.link(body,'Cube Recipes','Cube recipe reference ↗');details.appendChild(body);box.appendChild(details);});
+    this.detail.appendChild(box);
+  };
+  Loot.prototype.drawDetail=function(){
+    var self=this;clear(this.detail);this.rows=[];if(this.mode==='comparison'){require('$:/rmd/loot-comparison-ui.js').draw(this);return;}
+    if(this.mode!=='source'){
+      var item=this.itemMap.get(this.itemId);if(!item){this.detail.appendChild(node(this.document,'p','rmd-lt-note','Choose loot from the browser.'));return;}this.selectionHeader(item,true);
+      if(!item.enabled||item.recipeOnly){this.drawCrafting(item);return;}
+      this.data.sources.forEach(function(src){self.engine.contexts(src,self.settings()).forEach(function(c){if(self.mappedOnly&&!c.area)return;var row=self.calc(c,item);if(row.chance>0)self.rows.push({context:c,item,result:row,id:key(c),name:src.name,search:[src.name,src.monster,c.table,c.area?.name||''].join(' ').toLowerCase()});});});
+    }else{
+      var src=this.sourceMap.get(this.sourceId);if(!src){this.detail.appendChild(node(this.document,'p','rmd-lt-note','Choose a source from the browser.'));return;}this.selectionHeader(src,false);
+      var contexts=this.engine.contexts(src,this.settings());
+      if(!contexts.length){this.emptyState(src);return;}
+      var context=contexts.find(function(c){return key(c)===self.contextChoice;})||contexts[0];this.contextChoice=key(context);this.currentContext=context;
+      if(contexts.length>1)this.select(this.detail,'Encounter location',contexts.map(function(c){return [key(c),(c.area?.name||'Reference level')+' · level '+c.level];}),this.contextChoice,function(v){self.contextChoice=v;self.update();});
+      this.detail.appendChild(node(this.document,'p','rmd-lt-note',context.kind==='table'?'':context.area?context.area.name+' · monster level '+context.level:context.method+' · calculation level '+context.level));
+      if(src.kind==='table')this.detail.appendChild(node(this.document,'p','rmd-lt-note','These odds are per table execution at level '+context.level+'. No monster or location is implied. Use the level override to change this assumption.'));
+      var reachable=this.engine.classes.get(context.table).reachable;
+      this.data.items.forEach(function(i){if(!i.enabled||i.recipeOnly||i.kind==='runeword'||(!reachable.has(i.id)&&!reachable.has('base:'+i.code)))return;var row=self.calc(context,i);if(row.chance>0)self.rows.push({context,item:i,result:row,id:i.id,name:i.name,search:[i.name,i.code,i.type,i.setName].join(' ').toLowerCase()});});
+    }
+    if(!this.rows.length){this.emptyState(this.mode!=='source'?this.itemMap.get(this.itemId):this.sourceMap.get(this.sourceId));return;}
+    this.analysis=node(this.document,'div','rmd-lt-analysis');this.detail.appendChild(this.analysis);
+    var tools=node(this.document,'div','rmd-lt-result-tools');this.search(tools,this.mode!=='source'?'Filter drop sources':'Filter source loot',this.mode!=='source'?'Filter source, area, or table…':'Filter this source’s loot…',this.resultQuery,function(v){self.resultQuery=v.toLowerCase();self.resultPage=0;self.drawResults();});
+    this.select(tools,'Result order',[['odds','Highest odds'],['rare','Lowest odds'],['name','Name A–Z'],['area','Area A–Z']],this.resultSort,function(v){self.resultSort=v;self.resultPage=0;self.drawResults();});
+    if(this.mode==='source')this.select(tools,'Result loot category',this.kindValues().filter(function(v){return v[0]!=='runeword';}),this.sourceLootKind,function(v){self.sourceLootKind=v;self.resultPage=0;self.drawResults();});
+    this.detail.appendChild(tools);this.resultsNote=node(this.document,'p','rmd-lt-small');this.resultsNote.setAttribute('aria-live','polite');this.detail.appendChild(this.resultsNote);this.resultsBody=node(this.document,'div');this.detail.appendChild(this.resultsBody);this.resultPages=node(this.document,'nav','rmd-lt-pages');this.resultPages.setAttribute('aria-label','Drop result pages');this.detail.appendChild(this.resultPages);
+    this.drawResults();
+    var note=node(this.document,'p','rmd-lt-footnote','Table-based estimates · at least one copy · fresh game · six-item cap. '+(this.mode==='source'?'Base rows include every quality and overlap named-item rows; do not sum these probabilities.':'Ranked by chance per kill, without travel time or monster density.'));
+    this.detail.appendChild(note);
+  };
+  Loot.prototype.emptyState=function(entry){
+    var box=node(this.document,'div','rmd-lt-message'),self=this;box.appendChild(node(this.document,'h4','','No calculated drops in this view'));
+    var message=this.encounter.startsWith('desecrated')&&!this.levelOverride?'Enter the actual Desecrated monster level in Advanced filters to calculate this encounter.':this.mode==='source'?'This source has no valid loot-table binding for the selected difficulty and encounter, or is outside the area filter. This does not establish that scripted rewards are impossible.':'Try another difficulty, area, encounter type, or monster level. Loot may also be recipe-only or assigned to an unbound/scripted pool.';
+    box.appendChild(node(this.document,'p','rmd-lt-note',message));
+    if(this.mode!=='source'&&entry.recipes?.length)this.drawCrafting(entry);
+    if(this.mode==='source'&&entry.tc){var group=entry.tc[this.difficulty];box.appendChild(node(this.document,'p','rmd-lt-small','Configured tables: '+[...new Set(Object.values(group).filter(Boolean))].join(' · ')));}
+    var related=this.mode!=='source'?this.data.classes.filter(function(t){return !t.generated&&(t.entries.some(function(e){return e.kind==='item'&&(e.ref===entry.id||e.ref==='base:'+entry.code);}));}).slice(0,8):this.data.classes.filter(function(t){return entry.tc&&Object.values(entry.tc[self.difficulty]).some(function(name){return name&&!self.engine.classes.has(name)&&t.name.startsWith(name);});}).slice(0,8);
+    if(related.length){box.appendChild(node(this.document,'p','rmd-lt-small','Configured pools to inspect (per execution; location not implied):'));related.forEach(function(t){self.button(box,t.name,function(){self.chooseSource('table:'+t.name);},'rmd-lt-pool-link');});}
+    this.detail.appendChild(box);
+  };
+  Loot.prototype.drawResults=function(){
+    var self=this,rows=this.rows.filter(function(r){return (!self.resultQuery||r.search.includes(self.resultQuery))&&(self.mode!=='source'||self.kindMatches(r.item,self.sourceLootKind));});
+    rows.sort(function(a,b){return (self.resultSort==='name'?a.name.localeCompare(b.name):self.resultSort==='area'?(a.context.area?.name||'').localeCompare(b.context.area?.name||''):self.resultSort==='rare'?a.result.chance-b.result.chance:b.result.chance-a.result.chance)||a.name.localeCompare(b.name)||a.id.localeCompare(b.id);});
+    var pages=Math.max(1,Math.ceil(rows.length/20));this.resultPage=Math.min(this.resultPage,pages-1);this.resultsNote.textContent=count(rows.length)+(this.mode!=='source'?' source / area combinations':' loot entries')+' · '+diffs[this.difficulty]+' · '+this.mf+'% MF';
+    this.visibleRows=rows;var active=rows.find(function(r){return r.id===self.focusedKey;})||rows[0];if(active)this.focusedKey=active.id;
+    this.drawAnalysis(active,rows);clear(this.resultsBody);clear(this.resultPages);
+    var table=node(this.document,'table','rmd-lt-table'),caption=node(this.document,'caption','rmd-lt-sr',this.mode!=='source'?'Drop sources and odds':'Possible loot and odds');table.appendChild(caption);
+    var thead=node(this.document,'thead'),tr=node(this.document,'tr');[this.mode!=='source'?'Source':'Loot',this.mode!=='source'?'Area / level':'Type','Chance','1 in'].forEach(function(label){var th=node(self.document,'th','',label);th.scope='col';tr.appendChild(th);});thead.appendChild(tr);table.appendChild(thead);var tbody=node(this.document,'tbody');table.appendChild(tbody);
+    rows.slice(this.resultPage*20,this.resultPage*20+20).forEach(function(r){
+      var tr=node(self.document,'tr',r.id===self.focusedKey?'rmd-lt-active-row':'');
+      function cell(label){var td=node(self.document,'td');td.setAttribute('data-label',label);tr.appendChild(td);return td;}
+      var name=cell(self.mode!=='source'?'Source':'Loot');
+      if(self.mode!=='source'){self.button(name,r.context.source.name,function(){self.chooseSource(r.context.source.id);},'rmd-lt-text-button');name.appendChild(node(self.document,'small','rmd-lt-subtext','('+r.context.source.monster+')'+(r.context.source.kind==='superunique'?' · named unique':'')));}
+      else{var wrap=node(self.document,'span','rmd-lt-loot-name');self.image(wrap,r.item,false);self.button(wrap,r.item.name,function(){self.chooseItem(r.item.id);},'rmd-lt-text-button rmd-lt-'+r.item.kind);name.appendChild(wrap);name.appendChild(node(self.document,'small','rmd-lt-subtext',r.item.code));}
+      var where=cell(self.mode!=='source'?'Area / level':'Type');where.appendChild(node(self.document,'span','',self.mode!=='source'?(r.context.area?.name||'Area not linked'):labels[r.item.kind]));where.appendChild(node(self.document,'small','rmd-lt-subtext',self.mode!=='source'?'Level '+r.context.level:r.item.type));
+      var odds=cell('Chance'),b=self.button(odds,percent(r.result.chance),function(){self.focusedKey=r.id;self.drawAnalysis(r,rows);self.resultsBody.querySelectorAll('tr').forEach(function(el){el.classList.remove('rmd-lt-active-row');});tr.classList.add('rmd-lt-active-row');},'rmd-lt-odds');b.setAttribute('aria-label','Graph odds for '+r.name+(r.context.area?' in '+r.context.area.name:''));b.title='Show probability graph';cell('1 in').appendChild(node(self.document,'span','rmd-lt-number',oneIn(r.result.chance)));tbody.appendChild(tr);
+    });
+    this.resultsBody.appendChild(table);if(!rows.length)this.resultsBody.appendChild(node(this.document,'p','rmd-lt-note','No results match this filter.'));
+    var previous=this.button(this.resultPages,'Previous',function(){self.resultPage--;self.drawResults();});previous.disabled=this.resultPage===0;this.resultPages.appendChild(node(this.document,'span','',''+(this.resultPage+1)+' / '+pages));var next=this.button(this.resultPages,'Next',function(){self.resultPage++;self.drawResults();});next.disabled=this.resultPage===pages-1;
+  };
+  Loot.prototype.drawAnalysis=function(active,rows){
+    clear(this.analysis);if(!active)return;var self=this,p=active.result.chance,c=active.context;
+    var summary=node(this.document,'div','rmd-lt-metrics');[['Chance / '+(c.source.kind==='table'?'execution':'kill'),percent(p)],['50% chance by',count(active.result.median)+' runs'],['90% chance by',count(active.result.ninety)+' runs']].forEach(function(pair){var box=node(self.document,'div');box.appendChild(node(self.document,'span','',pair[0]));box.appendChild(node(self.document,'strong','',pair[1]));summary.appendChild(box);});this.analysis.appendChild(summary);
+    var graphs=node(this.document,'div','rmd-lt-graphs'),comparison=node(this.document,'section','rmd-lt-chart'),outlook=node(this.document,'section','rmd-lt-chart');graphs.appendChild(comparison);graphs.appendChild(outlook);this.analysis.appendChild(graphs);
+    comparison.appendChild(node(this.document,'h4','',this.mode!=='source'?'Compare farming sources':'Compare possible loot'));
+    var seen=new Set(),top=rows.slice().sort(function(a,b){return b.result.chance-a.result.chance;}).filter(function(r){var id=self.mode!=='source'?(r.context.source.monster||r.context.source.id):r.item.id;if(seen.has(id))return false;seen.add(id);return true;}).slice(0,5),maximum=top[0]?.result.chance||1;
+    top.forEach(function(r){var b=self.button(comparison,'',function(){self.focusedKey=r.id;self.drawResults();},'rmd-lt-bar-row');b.setAttribute('aria-label','Compare '+r.name+': '+percent(r.result.chance));var label=node(self.document,'span','rmd-lt-bar-label',r.name);label.title=r.name+(r.context.source.monster?' ('+r.context.source.monster+')':'')+(r.context.area?' · '+r.context.area.name:'');b.appendChild(label);b.appendChild(node(self.document,'strong','',percent(r.result.chance)));var track=node(self.document,'span','rmd-lt-bar-track'),bar=node(self.document,'span');bar.style.width=(r.result.chance/maximum*100)+'%';track.appendChild(bar);b.appendChild(track);});
+    comparison.appendChild(node(this.document,'p','rmd-lt-chart-note',(this.mode!=='source'?'Best area/variant per monster. ':'')+'Bars share a relative scale; values are chances per '+(c.source.kind==='table'?'execution.':'kill.')));
+    outlook.appendChild(node(this.document,'h4','','Chance over repeated runs'));
+    outlook.appendChild(node(this.document,'p','rmd-lt-chart-note',(this.mode!=='source'?c.source.name:active.item.name)+' · '+percent(math.cumulative(p,this.runs))+' within '+count(this.runs)+' runs'));
+    var ns='http://www.w3.org/2000/svg',svg=this.document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 320 180');svg.setAttribute('role','img');svg.setAttribute('aria-label','Probability of at least one '+active.item.name+' after up to '+this.runs+' independent runs of '+c.source.name+'. Final chance '+percent(math.cumulative(p,this.runs))+'.');
+    function shape(tag,attrs,text){var e=self.document.createElementNS(ns,tag);Object.entries(attrs).forEach(function(pair){e.setAttribute(pair[0],pair[1]);});if(text)e.textContent=text;svg.appendChild(e);return e;}
+    var endpoint=math.cumulative(p,this.runs),magnitude=Math.pow(10,Math.floor(Math.log10(Math.max(endpoint,1e-20)))),ceiling=Math.min(1,[1,2,5,10].map(function(n){return n*magnitude;}).find(function(n){return n>=endpoint;})||1);
+    shape('title',{},'Cumulative chance of finding '+active.item.name);[0,.5,1].forEach(function(v){var y=145-v*120;shape('line',{x1:52,y1:y,x2:306,y2:y,stroke:'#45372d','stroke-width':1});shape('text',{x:46,y:y+4,'text-anchor':'end',fill:'#ae9d86','font-size':10},percent(v*ceiling));});
+    var points=[];for(let i=0;i<=60;i++){var n=this.runs*i/60;points.push((52+254*i/60).toFixed(2)+','+(145-120*math.cumulative(p,n)/ceiling).toFixed(2));}
+    shape('polygon',{points:'52,145 '+points.join(' ')+' 306,145',fill:'#d8ab6630'});shape('polyline',{points:points.join(' '),fill:'none',stroke:'#d8ab66','stroke-width':2.5});shape('text',{x:52,y:165,fill:'#ae9d86','font-size':11},'0');shape('text',{x:306,y:165,'text-anchor':'end',fill:'#ae9d86','font-size':11},count(this.runs)+' runs');outlook.appendChild(svg);
+    outlook.appendChild(node(this.document,'p','rmd-lt-chart-note','Independent fresh games; a probability is not a guarantee. The vertical scale adapts to this range. Change Planned runs above.'));
+    var details=node(this.document,'details','rmd-lt-source-info');details.appendChild(node(this.document,'summary','','Calculation & source'));
+    var body=node(this.document,'div');body.appendChild(node(this.document,'p','rmd-lt-small','Loot table: '+c.table+(c.table!==c.originalTable?' (upgraded from '+c.originalTable+')':'')));
+    body.appendChild(node(this.document,'p','rmd-lt-small','Level '+c.level+' · '+this.mf+'% Magic Find · '+this.players+' players · '+this.nearby+' nearby party · six-item limit'));
+    body.appendChild(node(this.document,'p','rmd-lt-small',c.method));this.link(body,c.source.title,'Open monster entry ↗');this.link(body,active.item.title,'Open item entry ↗');
+    var path=this.engine.paths(c.table,active.item.id,1)[0];if(path){body.appendChild(node(this.document,'p','rmd-lt-small','One qualifying route (all routes contribute to the total):'));var list=node(this.document,'ol','rmd-lt-path');path.forEach(function(step){list.appendChild(node(self.document,'li','',step.table+' → '+step.entry+' · weight '+step.weight+'/'+step.total));});body.appendChild(list);}
+    var provenance=[c.source.source,this.engine.classes.get(c.table)?.source,active.item.source].filter(Boolean);[...new Map(provenance.map(function(s){return [s.origin+'|'+s.file+'|'+s.line,s];})).values()].forEach(function(s){body.appendChild(node(self.document,'p','rmd-lt-provenance',(s.origin==='mod'?'Mod':'Archive')+' · '+s.file+' · row '+s.line));});details.appendChild(body);this.analysis.appendChild(details);
+  };
+  Loot.prototype.render=function(parent,nextSibling){
+    this.parentDomNode=parent;this.computeAttributes();this.execute();this.load();var root=node(this.document,'div','rmd-loot');root.setAttribute('aria-label','Loot calculator');this.root=root;
+    if(!this.data){root.appendChild(node(this.document,'p','','Loot data has not been imported.'));parent.insertBefore(root,nextSibling);this.domNodes.push(root);return;}
+    this.mode='item';this.itemId=this.getAttribute('item','')||this.data.items.find(function(i){return i.key==='Harlequin Crest'&&i.kind==='unique';})?.id||this.data.items[0].id;this.sourceId='monster:diablo';this.difficulty=2;this.mf=0;this.players=this.nearby=1;this.runs=100;this.encounter='standard';this.area=this.levelOverride=this.itemQuery=this.sourceQuery=this.resultQuery=this.contextChoice=this.focusedKey='';this.itemKind=this.sourceKind=this.sourceLootKind='all';this.pickerSort='type';this.resultSort='odds';this.pickerPage=this.resultPage=0;this.generation=this.generation||0;this.mappedOnly=false;
+    var self=this,toolbar=node(this.document,'div','rmd-lt-toolbar'),tabs=node(this.document,'div','rmd-lt-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Loot calculator mode');this.tabs=[];
+    [['item','Find an item'],['source','Browse a source'],['comparison','Simulated comparisons']].forEach(function(pair,index){var b=self.button(tabs,pair[1],function(){self.switchMode(pair[0]);});b.dataset.mode=pair[0];b.setAttribute('role','tab');b.setAttribute('aria-selected',String(pair[0]==='item'));b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();var next=e.key==='Home'?0:e.key==='End'?2:(index+(e.key==='ArrowRight'?1:2))%3;self.switchMode(['item','source','comparison'][next]);self.tabs[next].focus();});self.tabs.push(b);});toolbar.appendChild(tabs);
+    var settings=node(this.document,'div','rmd-lt-settings');toolbar.appendChild(settings);
+    this.select(settings,'Difficulty',diffs.map(function(d,i){return [String(i),d];}),this.difficulty,function(v){self.difficulty=Number(v);self.queue();});
+    this.numeric(settings,'Magic Find %',0,0,10000,function(v){self.mf=Math.min(10000,Math.max(0,Math.trunc(Number(v)||0)));self.queue();});
+    this.playerSelect=this.select(settings,'Players',Array.from({length:8},function(_,i){return [String(i+1),String(i+1)];}),1,function(v){self.players=Number(v);self.nearby=Math.min(self.nearby,self.players);self.nearbySelect.value=String(self.nearby);Array.from(self.nearbySelect.options).forEach(function(o){o.disabled=Number(o.value)>self.players;});self.queue();});
+    this.nearbySelect=this.select(settings,'Nearby party',Array.from({length:8},function(_,i){return [String(i+1),String(i+1)];}),1,function(v){self.nearby=Math.min(Number(v),self.players);self.nearbySelect.value=String(self.nearby);self.queue();});Array.from(this.nearbySelect.options).forEach(function(o){o.disabled=Number(o.value)>1;});
+    this.numeric(settings,'Planned runs',100,1,1000000,function(v){self.runs=Math.max(1,Math.min(1000000,Math.trunc(Number(v)||1)));if(self.mode==='comparison')self.queue();else if(self.analysis)self.drawAnalysis(self.visibleRows?.find(function(r){return r.id===self.focusedKey;}),self.visibleRows||[]);});
+    var advanced=node(this.document,'details','rmd-lt-advanced');this.advanced=advanced;this.advancedSummary=node(this.document,'summary','','Advanced filters');advanced.appendChild(this.advancedSummary);var fields=node(this.document,'div','rmd-lt-advanced-fields');advanced.appendChild(fields);
+    this.areaSelect=this.select(fields,'Area filter',[['','All known areas']].concat(this.data.areas.filter(function(a){return a.levels.some(Boolean);}).sort(function(a,b){return a.act-b.act||a.name.localeCompare(b.name);}).map(function(a){return [a.id,'Act '+a.act+' · '+a.name];})),this.area,function(v){self.area=v;self.queue();});
+    this.select(fields,'Encounter',[['standard','Standard'],['champion','Champion (+2 levels)'],['unique','Unique (+3 levels)'],['quest','Quest drop'],['desecrated','Desecrated'],['desecratedChampion','Desecrated champion'],['desecratedUnique','Desecrated unique']],this.encounter,function(v){self.encounter=v;self.queue();});
+    var level=this.numeric(fields,'Monster level override','',1,255,function(v){self.levelOverride=v===''?'':Math.min(255,Math.max(1,Math.trunc(Number(v)||1)));self.queue();});level.placeholder='Automatic';
+    var mapped=node(this.document,'label','rmd-lt-check'),check=node(this.document,'input');check.type='checkbox';check.addEventListener('change',function(){self.mappedOnly=check.checked;self.queue();});mapped.appendChild(check);mapped.appendChild(node(this.document,'span','','Only mapped farming locations (item search)'));fields.appendChild(mapped);
+    fields.appendChild(node(this.document,'p','rmd-lt-note','Nearby party includes you. For solo /players settings, leave Nearby party at 1. Desecrated zones require their actual monster level.'));
+    toolbar.appendChild(advanced);root.appendChild(toolbar);
+    var work=node(this.document,'div','rmd-lt-workspace');this.pickerShell=node(this.document,'details','rmd-lt-picker-shell');this.pickerSummary=node(this.document,'summary','rmd-lt-picker-summary');this.pickerShell.appendChild(this.pickerSummary);this.picker=node(this.document,'section','rmd-lt-picker');this.pickerShell.appendChild(this.picker);this.detail=node(this.document,'section','rmd-lt-detail');this.detail.setAttribute('aria-label','Loot calculation results');work.appendChild(this.pickerShell);work.appendChild(this.detail);root.appendChild(work);parent.insertBefore(root,nextSibling);this.domNodes.push(root);
+    this.viewportQuery=this.document.defaultView?.matchMedia('(max-width:900px)');this.viewportChanged=function(){self.pickerShell.open=!self.viewportQuery?.matches;};this.viewportChanged();this.viewportQuery?.addEventListener('change',this.viewportChanged);this.buildPicker();this.update();
+  };
+  Loot.prototype.removeChildDomNodes=function(){clearTimeout(this.settingTimer);this.generation++;this.viewportQuery?.removeEventListener('change',this.viewportChanged);Widget.prototype.removeChildDomNodes.call(this);};
+  Loot.prototype.refresh=function(changed){var attributes=this.computeAttributes();if(attributes.item||changed['$:/rmd/loot-data']){clearTimeout(this.settingTimer);this.generation++;this.refreshSelf();return true;}return false;};
+  exports['rmd-loot']=Loot;
+})();

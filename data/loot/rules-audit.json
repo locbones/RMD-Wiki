@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "guideVersion": "3.1.1.0 (91923)",
+  "sourceFingerprint": "581ef47a89451dce27058cd347a4f6a1f010b8796ca376de7a9d63428d993f4e",
+  "treasureClassInput": {
+    "relative": "global/excel/treasureclassex.txt",
+    "origin": "mod",
+    "sha256": "958e5e5f817ee02bd69124520e8484dd416f0436fe44b07903c783255506acd4",
+    "bytes": 120089
+  },
+  "references": [
+    {
+      "relative": "docs/itemratio-calc.html",
+      "sha256": "5cf6d46992e63179c9bd5a1304c2701c7dcb111bd12b085015008d76e1f5fd68"
+    },
+    {
+      "relative": "data/files/treasureclassex.js",
+      "sha256": "1df8371283e9c930eb13c8ce2b7166867f6e52eac868212841ebc4980e7728be"
+    },
+    {
+      "relative": "data/files/itemratio.js",
+      "sha256": "50e47f4e7579ad57969d067fe31d0f9627045d1ee3ea1797875c50eed7d3a943"
+    },
+    {
+      "relative": "data/files/uniqueitems.js",
+      "sha256": "31af4dd5f2fcbf1a8480072c462074a58eaebf54789792bf50296f5f2ebf243f"
+    },
+    {
+      "relative": "data/files/setitems.js",
+      "sha256": "8263a1d1c57b074b456e66ca6af7023631311b492358c84f42f7c1ae60e5c798"
+    },
+    {
+      "relative": "data/files/levels.js",
+      "sha256": "fa650f59042a31af5fddf3a36b575c581daf0e5c964b56b6bbc1dd8c86a57e13"
+    },
+    {
+      "relative": "data/files/monstats.js",
+      "sha256": "ce4723b47b9fe963dd48258747e2b84cb348e2f8510155cddb8504a195e55975"
+    },
+    {
+      "relative": "data/files/superuniques.js",
+      "sha256": "5e71bb825c7003ce5c955255d46beb5d3f2aa1bdc4d646ea9ec468e590f69097"
+    },
+    {
+      "relative": "data/files/monumod.js",
+      "sha256": "6fa8b8625789723e42a5fb9f656e599b8779e828432802310105cd2c2a213d80"
+    }
+  ],
+  "coverage": [
+    {
+      "rule": "Picks / Prob / NoDrop",
+      "status": "Implemented",
+      "detail": "Weighted positive Picks, ordered negative Picks, nested tables and player/nearby-party NoDrop rounding."
+    },
+    {
+      "rule": "Drop budget",
+      "status": "Implemented",
+      "detail": "Shared six-successful-item cap across all nested branches, preserving ordered branches such as Countess drops."
+    },
+    {
+      "rule": "Itemratio qualification",
+      "status": "Corrected and tested",
+      "detail": "Class-specific and normal/exceptional/elite equipment selection; greatest matching Version <= 100. Uber follows base-item tier, not the quest flag."
+    },
+    {
+      "rule": "Quality divisor and minima",
+      "status": "Implemented",
+      "detail": "Truncated (monster level − base level) / quality divisor, x128 precision, effective MF, minimum cap, then TC quality modifier /1024."
+    },
+    {
+      "rule": "Quality sequence / eligibility",
+      "status": "Implemented",
+      "detail": "Unique before set, enabled/level eligibility, named-item rarity weighting, explicit named drops, Cow set restrictions and mod recipe-only exclusions. Failed unique rolls are not rerolled as sets."
+    },
+    {
+      "rule": "Item entry modifiers",
+      "status": "Applicable modifiers checked",
+      "detail": "Current entries use mul. Gold mul changes stack size; it does not change the chance of receiving a gold stack."
+    },
+    {
+      "rule": "Later-version conditional fields",
+      "status": "Not present in current mod TC schema",
+      "detail": "The 3.1 guide also describes ConditionCalc, ladder-season and quest-flag gating. The authoritative mod treasure-class file uses the earlier schema and has none of these fields."
+    },
+    {
+      "rule": "Population / placement",
+      "status": "Approximate",
+      "detail": "Current density, monster/elite pools, group/party sizes, champion constant, fixed map alternatives and verified scripted encounters. Actual collision, placement failures, live scripts and room-by-room allocation are not fully emulated."
+    }
+  ],
+  "activeEntryModifiers": [
+    "mul"
+  ],
+  "unsupported": [],
+  "notes": [
+    "The current mod tables remain authoritative; later retail data is used as documentation only.",
+    "Base/material results include all item qualities; separate socket, affix, ethereal and gold-quantity outcomes are outside the current item selectors.",
+    "Unique/set diminishing-return MF factors are 250/500. Integer rounding follows the documented standard Expansion implementation.",
+    "The newer guide sparsePopulate prose differs from the legacy standard spawn predicate. The approximate population model retains the legacy predicate. Current nonzero definitions: evilhut."
+  ]
+}

@@ -1,0 +1,1182 @@
+{
+  "schemaVersion": 1,
+  "fingerprint": "581ef47a89451dce27058cd347a4f6a1f010b8796ca376de7a9d63428d993f4e",
+  "counts": {
+    "items": 2800,
+    "monsters": 717,
+    "lootTables": 1369,
+    "generatedPools": 224,
+    "areas": 239
+  },
+  "issues": [
+    {
+      "kind": "empty-placeholder",
+      "table": "Blank",
+      "entry": "NaN",
+      "source": {
+        "file": "global/excel/treasureclassex.txt",
+        "line": 3,
+        "origin": "mod"
+      }
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5c"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5u"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5(N)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5c(N)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5u(N)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5(H)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5c(H)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:vampire_trang",
+      "table": "vampire5u(H)"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:goblin_gem",
+      "table": "Goblin - Gems"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:goblin_gold",
+      "table": "Goblin - Gold"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:goblin_box",
+      "table": "Goblin - Chests"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:goblin_runes",
+      "table": "Goblin - Runes"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:goblin_rmd",
+      "table": "Goblin - RMD"
+    },
+    {
+      "kind": "unresolved-monster-table",
+      "monster": "monster:suicide_soulsurprise",
+      "table": "SoulSurprise"
+    }
+  ],
+  "inputs": [
+    {
+      "relative": "global/excel/monumod.txt",
+      "origin": "archive",
+      "sha256": "1bb3605970ef020e94eb67485b5ec70ea0bf58a8d30dd5f619b1d1abea89e975",
+      "bytes": 3134
+    },
+    {
+      "relative": "global/tiles/Act1/Catacomb/Andy3.ds1",
+      "origin": "archive",
+      "sha256": "92f9911ba27e813aa319b6c9c7e6cddcb340406a67ce24bd00d4971553721639",
+      "bytes": 14007
+    },
+    {
+      "relative": "global/tiles/Act1/Cathedrl/Cathy3.ds1",
+      "origin": "archive",
+      "sha256": "5c4c33f0597b3fa1b86a9c77d9158b37fccc63c3943a2306753e67b2faf8cc60",
+      "bytes": 17346
+    },
+    {
+      "relative": "global/tiles/Act1/Caves/CaveRoom2.ds1",
+      "origin": "archive",
+      "sha256": "bd2e1687fddedf244af777d745876d7c63c34791ea3241e88af262cc288b7305",
+      "bytes": 10467
+    },
+    {
+      "relative": "global/tiles/Act1/Caves/CaveRoom3.ds1",
+      "origin": "archive",
+      "sha256": "1a438df9dc897b1d0f78e2444608f2ab5ac4448b364a79fa2f32f6e1e14b152a",
+      "bytes": 10507
+    },
+    {
+      "relative": "global/tiles/Act1/Caves/CaveRoom4.ds1",
+      "origin": "archive",
+      "sha256": "22617de37f8679c780857224d319d10d335aede633ca9f8d7504e9845957b9b4",
+      "bytes": 10367
+    },
+    {
+      "relative": "global/tiles/Act1/Caves/CaveRoom5.ds1",
+      "origin": "archive",
+      "sha256": "b963c83e6fea9a84c65d7e3b71f922cf51d87fb588b8eeeea6b06a9abb44289e",
+      "bytes": 10467
+    },
+    {
+      "relative": "global/tiles/Act1/Court/Cat_Court.ds1",
+      "origin": "archive",
+      "sha256": "07f23f24b3c47221467727781b0e60fa8ea6e53d512a2d12bd0bf5cb8f978984",
+      "bytes": 6711
+    },
+    {
+      "relative": "global/tiles/Act1/Court/CourtE.ds1",
+      "origin": "archive",
+      "sha256": "6649c05b788c5d667092decd2b73fe3ecace0a66c41cad8681b0b479d8816eaa",
+      "bytes": 37743
+    },
+    {
+      "relative": "global/tiles/Act1/Court/CourtN.ds1",
+      "origin": "archive",
+      "sha256": "20ce9eeb321276b01e782545a855659ad9adf9e1443ac2f10041ce8c255ac875",
+      "bytes": 37677
+    },
+    {
+      "relative": "global/tiles/Act1/Court/CourtW.ds1",
+      "origin": "archive",
+      "sha256": "e4e4e701160f49fa4d58828ba02b864883043fb75b28fa38348f4422933ffc7a",
+      "bytes": 37697
+    },
+    {
+      "relative": "global/tiles/Act1/Monastry/facade1.ds1",
+      "origin": "archive",
+      "sha256": "de37153505c177823f3e629f8da33d755bd71815de6c52ca06827b4976170f8c",
+      "bytes": 30244
+    },
+    {
+      "relative": "global/tiles/Act1/Outdoors/Tower2.ds1",
+      "origin": "archive",
+      "sha256": "432c7d801466208657b90d75e27c2f10cbc3a79fb10790c193ba9452e4fe28a6",
+      "bytes": 1383
+    },
+    {
+      "relative": "global/tiles/Act1/Tristram/Tri_Town4.ds1",
+      "origin": "archive",
+      "sha256": "b43e47ee2ded16256682dc6471366086370fe2b4322fcbee9fb4a19d7c25342d",
+      "bytes": 62475
+    },
+    {
+      "relative": "global/tiles/Act2/Palace/Harem2.ds1",
+      "origin": "archive",
+      "sha256": "a4104e7ccb81d4fccf7d9c864993e1e6fe317e9905d597f898da254e9b41dfa7",
+      "bytes": 8692
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm1A.ds1",
+      "origin": "archive",
+      "sha256": "52c36c49566a7047944a8377f578ac0fca789faa3409a0c623381e22e7cbd415",
+      "bytes": 28562
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm1B.ds1",
+      "origin": "archive",
+      "sha256": "325003985f9cc18839f122764f1e5c0bac80a4645b4ce54e73771c68a124e7dc",
+      "bytes": 35546
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm2A.ds1",
+      "origin": "archive",
+      "sha256": "3af44695065bd1c48900ac1d63b0a2289d590c3cb9dcdd30372b181cd7e6daec",
+      "bytes": 28582
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm2B.ds1",
+      "origin": "archive",
+      "sha256": "19979ec9db55dc4c2aa96b41697dee9b20b0aed42d116cf0363f219c2719d9e8",
+      "bytes": 35626
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm3A.ds1",
+      "origin": "archive",
+      "sha256": "96e16f75bb69a969c324197caf7ac3d9848a417f3c5a65328ebef4cb2820811f",
+      "bytes": 28462
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm3B.ds1",
+      "origin": "archive",
+      "sha256": "5ec943bf9b44c7c7d22ee054cb4dbf4284e7af787f41c3ac50332e042219adf8",
+      "bytes": 35286
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm4A.ds1",
+      "origin": "archive",
+      "sha256": "f9bff351b02289350c571085080e1da20fcf58ed9df01f65a89768f01ff0e25b",
+      "bytes": 28442
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm4B.ds1",
+      "origin": "archive",
+      "sha256": "42f810d0effd37a7b412f2ed6718ddffaf98006add9e0643ec5a0de6d294f7c2",
+      "bytes": 35506
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm5A.ds1",
+      "origin": "archive",
+      "sha256": "f0fe3e5f0887b993cefd015dee4ba66138a5d9f1c430404c881574982babcae3",
+      "bytes": 28502
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm5B.ds1",
+      "origin": "archive",
+      "sha256": "8165185682fd7bba4edd1cf81b5642a20990f73a875c808fc48624718d6aa6d9",
+      "bytes": 35406
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm6A.ds1",
+      "origin": "archive",
+      "sha256": "01201bab91807b01104c74bde85c8272c864e37c9602a1832492b676ca65b580",
+      "bytes": 28682
+    },
+    {
+      "relative": "global/tiles/Act3/Jungle/DungRm6B.ds1",
+      "origin": "archive",
+      "sha256": "a7176909881f90bd2a773154c309c1367357901d25b51a26e4e158e80d8b9244",
+      "bytes": 28922
+    },
+    {
+      "relative": "global/tiles/Act3/Sewer/SewerTreasure1.ds1",
+      "origin": "archive",
+      "sha256": "01d744de8febcd263a2de6f3d50639769120ea45e632955248494d4803ff9f7c",
+      "bytes": 7669
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple0.ds1",
+      "origin": "archive",
+      "sha256": "0a3d6e228bef54f2376e1b3b23087fba1e4ff42203e2db3019811b6d9986d375",
+      "bytes": 20549
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple1.ds1",
+      "origin": "archive",
+      "sha256": "013f67472189e38ee8be9c302529fceee4448be7152ce2f7994726f6947c69a5",
+      "bytes": 15580
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple10.ds1",
+      "origin": "archive",
+      "sha256": "c068193e2a293f161d25077e5caf100af64bf9526ad3aadd281a32e081ef06ba",
+      "bytes": 15520
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple2.ds1",
+      "origin": "archive",
+      "sha256": "d5b5a9a13a5cd5f30fc9dfa4c7e1544c7722bc6b2e699256662b97a234c8bc2d",
+      "bytes": 16200
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple3.ds1",
+      "origin": "archive",
+      "sha256": "9189babd495ce2edf32465490ffb762636583239e62dd68849dd2b567d944b2c",
+      "bytes": 15640
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple4.ds1",
+      "origin": "archive",
+      "sha256": "da7c03cf568963a1aa6e7705fbda9638600668a09f4b73f73a79fec9f92d5ef3",
+      "bytes": 15600
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple5.ds1",
+      "origin": "archive",
+      "sha256": "59d9adc6bf2ca34af66827b2c3da6c6fb9fe156cbb6f5ec8bd3c9c7be33bcebb",
+      "bytes": 15869
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple6.ds1",
+      "origin": "archive",
+      "sha256": "4f101ce1e642a2a45528536b7e0322d1470cc7aabf01adec72221d015fc2ced0",
+      "bytes": 15780
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple7.ds1",
+      "origin": "archive",
+      "sha256": "d6137b5cb2f9adf286bffcf3c2520ba0a8308425b9542bf28bd9ce4c7c795b2a",
+      "bytes": 15960
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple8.ds1",
+      "origin": "archive",
+      "sha256": "02906a5e166c9bd5484795550ab4bd00ba346a6f4d8d8e1c476ab94a5e9edb43",
+      "bytes": 15889
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple9.ds1",
+      "origin": "archive",
+      "sha256": "e1168f3fdb6d05a9d1dc3db5fe57d56e6b0d18aed2909c8f4d84ed8b168dc88a",
+      "bytes": 15529
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/MephComp.ds1",
+      "origin": "archive",
+      "sha256": "1db568bc8183efc862468647ef5245109fe396e2178d3749591e594a25750f93",
+      "bytes": 37024
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravN.ds1",
+      "origin": "archive",
+      "sha256": "44cba9407af182298c804a5fd9b0a4e955131e739629c41d9f66d2b190a2ca02",
+      "bytes": 48944
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravNE.ds1",
+      "origin": "archive",
+      "sha256": "db9d8a22dff43962159d07c384509dbaf05fda369156e6534d8a9db898a40154",
+      "bytes": 25322
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravNW.ds1",
+      "origin": "archive",
+      "sha256": "f6c9407c80c31d52e382020772b0c9b28cc08315617f4f36bff5d0149a23d128",
+      "bytes": 25352
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravS.ds1",
+      "origin": "archive",
+      "sha256": "c7e5167c5c27f16008c7e0a3c4e37d254c19200efc2f2393df7c71bd6680161e",
+      "bytes": 49471
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravSE.ds1",
+      "origin": "archive",
+      "sha256": "87a38696fb550617d6c85d1353fb25b66fc34bae856fd7f822d01b99b06e1007",
+      "bytes": 25226
+    },
+    {
+      "relative": "global/tiles/Act3/Travincal/TravSW.ds1",
+      "origin": "archive",
+      "sha256": "a354fe5ff26935c7a050ca8e967930d88f275937f85fa3191bbe05e0064bedd5",
+      "bytes": 25292
+    },
+    {
+      "relative": "global/tiles/Expansion/baalLair/wthrone.ds1",
+      "origin": "archive",
+      "sha256": "9cc714e0c07c3517145b9d3d2d39e927bf82a041001494fba0f485ddbc898feb",
+      "bytes": 45237
+    },
+    {
+      "relative": "global/tiles/Expansion/mountaintop/MtnTop.ds1",
+      "origin": "archive",
+      "sha256": "1c9588f0cc0abcc6dd2ee8070be36b6ed4dc987a9300ecc80b7abed15c08095f",
+      "bytes": 22396
+    },
+    {
+      "relative": "global/tiles/Expansion/wildtemple/NihlE.ds1",
+      "origin": "archive",
+      "sha256": "8e28b7932d8dbd9d4515059c3084c0a822c903d67e032306c9f4fbb3ea25a4e5",
+      "bytes": 204756
+    },
+    {
+      "relative": "global/tiles/Expansion/wildtemple/NihlN.ds1",
+      "origin": "archive",
+      "sha256": "552a6af1b6e7d82781508aabccdfba5805581a5ea533d5cc44f6c6a217a573d4",
+      "bytes": 204816
+    },
+    {
+      "relative": "global/tiles/Expansion/wildtemple/NihlS.ds1",
+      "origin": "archive",
+      "sha256": "d70443e27120e4445adf027a9d5bf5cee5c3c1cdec0d267a9917af40cc3b6da3",
+      "bytes": 204836
+    },
+    {
+      "relative": "global/tiles/Expansion/wildtemple/NihlW.ds1",
+      "origin": "archive",
+      "sha256": "6e86ff444aecae29159a762f65b43cdd7219cc2603269e5ccb7458bdb9b735c0",
+      "bytes": 204736
+    },
+    {
+      "relative": "global/tiles/Expansion/wildtemple/tempEnter.ds1",
+      "origin": "archive",
+      "sha256": "f698f1e97b8e5e6aaf6d1f0d88c25b9d2053913681e9999f7082e2284db81599",
+      "bytes": 27250
+    },
+    {
+      "relative": "local/lng/strings/bnet.json",
+      "origin": "archive",
+      "sha256": "146b6d7839a4cc5b98610f4a39227bb1be9707155ad883f4e2db3e10df86cec4",
+      "bytes": 272094
+    },
+    {
+      "relative": "local/lng/strings/chinese-overlay.json",
+      "origin": "archive",
+      "sha256": "eb003c7f318491470ba47840ba36ef09129a094ea4fd2e61c133bc0e04102c49",
+      "bytes": 52263
+    },
+    {
+      "relative": "local/lng/strings/commands.json",
+      "origin": "archive",
+      "sha256": "a4e54f7319e2d163b1434c78cf22e2e7977d8b612a27ae500a2b7431ebfdb05e",
+      "bytes": 167484
+    },
+    {
+      "relative": "local/lng/strings/item-gems.json",
+      "origin": "archive",
+      "sha256": "258f13fa44f3d14889b2eba62bf98e6538fb4fa7717e0b529ea1fcaba8796ba0",
+      "bytes": 28650
+    },
+    {
+      "relative": "local/lng/strings/item-modifiers.json",
+      "origin": "archive",
+      "sha256": "8d0b3f92d402abf2fe4eed01c6d1221573be8c37c998c877b7577f1825078dfd",
+      "bytes": 210201
+    },
+    {
+      "relative": "local/lng/strings/item-nameaffixes.json",
+      "origin": "archive",
+      "sha256": "ad2e893487a552e497abc00f3b2c27cea816d6301c0ea8c1f80886fcde153fe3",
+      "bytes": 553611
+    },
+    {
+      "relative": "local/lng/strings/item-names.json",
+      "origin": "archive",
+      "sha256": "cf0371531a33ad1ff23d6ab6be2334cf10de20daa6fbf5509ef936d95946c5fe",
+      "bytes": 742853
+    },
+    {
+      "relative": "local/lng/strings/item-runes.json",
+      "origin": "archive",
+      "sha256": "3154b1b220659489a8eafc324448873af4e23cc6ff9512468854ad71f06902d1",
+      "bytes": 89766
+    },
+    {
+      "relative": "local/lng/strings/keybinds.json",
+      "origin": "archive",
+      "sha256": "3987a0288c53613487a5dab04a0dae20f8e15707d48c4fc92ef2c069a8ac9217",
+      "bytes": 93518
+    },
+    {
+      "relative": "local/lng/strings/levels.json",
+      "origin": "archive",
+      "sha256": "afefc9ed93c84d9d0be5cbf805117edbcc3e239d4a9228720f4a4bfd601b6c71",
+      "bytes": 241821
+    },
+    {
+      "relative": "local/lng/strings/mercenaries.json",
+      "origin": "archive",
+      "sha256": "bfe42d0f9ab5c11eb4043f6776d68c6e222d26499747f1c7291348be61753d79",
+      "bytes": 54867
+    },
+    {
+      "relative": "local/lng/strings/monsters.json",
+      "origin": "archive",
+      "sha256": "9b9fd44fb234dedfea43023db43df0df15fb6f84f9acc9b6ae4af8fbb18e9eee",
+      "bytes": 254278
+    },
+    {
+      "relative": "local/lng/strings/npcs.json",
+      "origin": "archive",
+      "sha256": "6750ca93882e9e6b6343da3ae0417a259b16edbf419d290bf78b501993d3ca1d",
+      "bytes": 14595
+    },
+    {
+      "relative": "local/lng/strings/objects.json",
+      "origin": "archive",
+      "sha256": "2d47309a97dc2628141f788ef109ae0346da14fcdcc9a662abd704bbd3b36942",
+      "bytes": 78980
+    },
+    {
+      "relative": "local/lng/strings/presence-states.json",
+      "origin": "archive",
+      "sha256": "f35f56bcb46695b60289b82cb7965e6126d32fb28066dcbd05e7dcf2cc63068b",
+      "bytes": 8250
+    },
+    {
+      "relative": "local/lng/strings/quests.json",
+      "origin": "archive",
+      "sha256": "644f4830b4d9ac3dbd667c4b6f0a9e902b86d424e072d59ad8b20086b21ccdf7",
+      "bytes": 130164
+    },
+    {
+      "relative": "local/lng/strings/shrines.json",
+      "origin": "archive",
+      "sha256": "6adeff95905ed1369b174d5af6480ea54c2af2ca125cb555e23adb4bbc8953da",
+      "bytes": 29641
+    },
+    {
+      "relative": "local/lng/strings/skills.json",
+      "origin": "archive",
+      "sha256": "9c11763bbb19d1633cacf9d99f12f57dbdf790f142e81c4d260089c8698222b6",
+      "bytes": 1160723
+    },
+    {
+      "relative": "local/lng/strings/ui-controller.json",
+      "origin": "archive",
+      "sha256": "790207b47314d5f7374a8f64b0a4c7d46498f862795cd2958d2bdc6c522bac08",
+      "bytes": 223955
+    },
+    {
+      "relative": "local/lng/strings/ui.json",
+      "origin": "archive",
+      "sha256": "bbca2af009623f55596be18c3d2a6d74582ec587f7796f77dc523304b9cbeb3f",
+      "bytes": 1369605
+    },
+    {
+      "relative": "local/lng/strings/vo.json",
+      "origin": "archive",
+      "sha256": "cd1c34f7124d298a4ae484375ece76af56003dcea5381ef3d3d1c1ba43fd997c",
+      "bytes": 3180645
+    },
+    {
+      "relative": "global/excel/armor.txt",
+      "origin": "mod",
+      "sha256": "43c9f5b64c54b163a842011e214cbe3f62335c47ac0a2007917b5cfeecf06022",
+      "bytes": 106076
+    },
+    {
+      "relative": "global/excel/automagic.txt",
+      "origin": "mod",
+      "sha256": "68c7328d0e9910be4d4be7216c7bcfacca8ad939b8e11e8a1cf0c270b067cd1c",
+      "bytes": 59592
+    },
+    {
+      "relative": "global/excel/charstats.txt",
+      "origin": "mod",
+      "sha256": "788ea371168b06f42ec53970f996e0da93e603a4c01d401510d33990cbfa5435",
+      "bytes": 3646
+    },
+    {
+      "relative": "global/excel/cubemain.txt",
+      "origin": "mod",
+      "sha256": "184faf90a0b3eb3c42bf454d0abaab3d2f605237d62022ec8c8efab8def22a1f",
+      "bytes": 2555149
+    },
+    {
+      "relative": "global/excel/gems.txt",
+      "origin": "mod",
+      "sha256": "1dba669d6c648e2116c977a231b1b259937eba64cb69574045bda6445b9d96b3",
+      "bytes": 7979
+    },
+    {
+      "relative": "global/excel/itemratio.txt",
+      "origin": "mod",
+      "sha256": "c66cf7b78ae3fbae43e856268b1f0e0b6992822ce00d5ab092ca6ba2edbbe414",
+      "bytes": 692
+    },
+    {
+      "relative": "global/excel/itemstatcost.txt",
+      "origin": "mod",
+      "sha256": "d6dab5d890597c7728e81a35695df9d89a114c02d3fc93464118807bcd1c47fe",
+      "bytes": 53226
+    },
+    {
+      "relative": "global/excel/itemtypes.txt",
+      "origin": "mod",
+      "sha256": "d8f3066c6007ab2e30b7ba537d56197aec42cf6475ba3acbde0f88199377cfa2",
+      "bytes": 23184
+    },
+    {
+      "relative": "global/excel/levels.txt",
+      "origin": "mod",
+      "sha256": "83550edcdaa4c9549760328987f95b0ddedd4afc188e5c60ff4ef61cf183c0dd",
+      "bytes": 137812
+    },
+    {
+      "relative": "global/excel/lvlprest.txt",
+      "origin": "mod",
+      "sha256": "29b91bcd77c76fb79802c340ad218d6bfcd5f2c65469c1455912b88660f320b1",
+      "bytes": 136047
+    },
+    {
+      "relative": "global/excel/misc.txt",
+      "origin": "mod",
+      "sha256": "bd774b558fcc7954c14ac5fd2c87cbaccbb4c0a707d708beda7ac7473511460b",
+      "bytes": 386692
+    },
+    {
+      "relative": "global/excel/monpreset.txt",
+      "origin": "mod",
+      "sha256": "a4c9c4fa1410b75b08875a1a028e04dbe11b7106d47a2b75369cc9ed9119a895",
+      "bytes": 4749
+    },
+    {
+      "relative": "global/excel/monstats.txt",
+      "origin": "mod",
+      "sha256": "90a56a9f2d0cd854f2d648996c38cb8ec25a6ec510af4e03a6a88543b9c8a828",
+      "bytes": 637086
+    },
+    {
+      "relative": "global/excel/properties.txt",
+      "origin": "mod",
+      "sha256": "04542c14b84c5fc8e44014e7f9f6a2a7e7846488abb14a1a7227114b2faad8d6",
+      "bytes": 40104
+    },
+    {
+      "relative": "global/excel/runes.txt",
+      "origin": "mod",
+      "sha256": "b7ebaa0c19387d89dafa11fb182704b7187dd5fc4f72790a9bcec9f7c7831287",
+      "bytes": 65889
+    },
+    {
+      "relative": "global/excel/setitems.txt",
+      "origin": "mod",
+      "sha256": "41eeae425f05b9f33c45a0a9b5a0cd412955ce51bdd605daa514e3a05d61eb40",
+      "bytes": 51478
+    },
+    {
+      "relative": "global/excel/sets.txt",
+      "origin": "mod",
+      "sha256": "06d017ac02def1e6dc12a267317c69025ce19dfd3fef9b2b1ea6a75d9cb4ca3b",
+      "bytes": 13380
+    },
+    {
+      "relative": "global/excel/skilldesc.txt",
+      "origin": "mod",
+      "sha256": "7f6129d068b36fd46057e9fb87e5ddeac86952dc54b0ecd176ac43cab76065e7",
+      "bytes": 154692
+    },
+    {
+      "relative": "global/excel/skills.txt",
+      "origin": "mod",
+      "sha256": "37c372caa4bbbe65899d71adc950bcb2450c09e3003a814d9d241b9e0fe4ea48",
+      "bytes": 505222
+    },
+    {
+      "relative": "global/excel/superuniques.txt",
+      "origin": "mod",
+      "sha256": "2b6651fcec5b2e712ecabceedda4d3bf3fe048e88d754a8cede10bfa061c0a1c",
+      "bytes": 11603
+    },
+    {
+      "relative": "global/excel/treasureclassex.txt",
+      "origin": "mod",
+      "sha256": "958e5e5f817ee02bd69124520e8484dd416f0436fe44b07903c783255506acd4",
+      "bytes": 120089
+    },
+    {
+      "relative": "global/excel/uniqueitems.txt",
+      "origin": "mod",
+      "sha256": "d1ae974b5aa1d6ac7824c04f748db085e5302d80e3e9440c515654bd51c84c7f",
+      "bytes": 148348
+    },
+    {
+      "relative": "global/excel/weapons.txt",
+      "origin": "mod",
+      "sha256": "43d7fe2890c3f38f8fff30ab9ff1bae8f11faeaa4ca35715cf5fe2b9cb068646",
+      "bytes": 152594
+    },
+    {
+      "relative": "global/tiles/Act1/Crypt/CryptCountess1.ds1",
+      "origin": "mod",
+      "sha256": "66c0e70bdf17c3864209e8b639397d5ea05398f5f941e5741171339ef161a504",
+      "bytes": 28292
+    },
+    {
+      "relative": "global/tiles/Act1/Crypt/CryptCountess2.ds1",
+      "origin": "mod",
+      "sha256": "1a114d8ca00c4de5680fb355c77930df7f153a4cac4bed3b5afdcb8388f9a985",
+      "bytes": 28212
+    },
+    {
+      "relative": "global/tiles/act1/forest_ruins/forest_ruins.ds1",
+      "origin": "mod",
+      "sha256": "f37ef5b2e100b411bb0f9e90c1ce146178533527a6fc29b49456158a735fe13a",
+      "bytes": 669134
+    },
+    {
+      "relative": "global/tiles/Act1/Outdoors/SoulSpirit.ds1",
+      "origin": "mod",
+      "sha256": "778974462bde0f229f40fb33346c2dbfc5eae93a8d3080812deb34d4dd52bbdd",
+      "bytes": 1561
+    },
+    {
+      "relative": "global/tiles/Act1/Outdoors/Tower2b.ds1",
+      "origin": "mod",
+      "sha256": "a1f1e6dcced373abae5b5606a2e511e7974700245c62ae1323b807850e570db6",
+      "bytes": 1561
+    },
+    {
+      "relative": "global/tiles/Act1/Town/TownE1.ds1",
+      "origin": "mod",
+      "sha256": "bd537fb693d0d07b7791059005065b8e5e8060ec44c394bf25d72f1b0161b469",
+      "bytes": 57850
+    },
+    {
+      "relative": "global/tiles/Act1/Town/TownN1.ds1",
+      "origin": "mod",
+      "sha256": "ba9b3a2fb8b2644b4424e28d3f3837db123be777b2c918020dce9c45fc9e7bc6",
+      "bytes": 57811
+    },
+    {
+      "relative": "global/tiles/Act1/Town/TownS1.ds1",
+      "origin": "mod",
+      "sha256": "a472932caa19103c3fd0468fbdf62b12507ed53c40b28daf8dd922fc93f6aa9a",
+      "bytes": 57878
+    },
+    {
+      "relative": "global/tiles/Act1/Town/TownW1.ds1",
+      "origin": "mod",
+      "sha256": "ab1474e6b3461352bc9be14e2d5006ba6ff9c796814a101ab2a76053bbe7eebf",
+      "bytes": 57905
+    },
+    {
+      "relative": "global/tiles/Act1/Tristram/Tri_Town4New.ds1",
+      "origin": "mod",
+      "sha256": "614f93a57f1d0afb82e052bc6864195096f91a855582ba9c056bb165d1a1787a",
+      "bytes": 62594
+    },
+    {
+      "relative": "global/tiles/Act2/Tomb/Duriel.ds1",
+      "origin": "mod",
+      "sha256": "d1dd725874e97cfa97882d3d4030baf7d8a2628c7973443ed543d2eb8b5741fd",
+      "bytes": 33062
+    },
+    {
+      "relative": "global/tiles/Act2/Town/LutN.ds1",
+      "origin": "mod",
+      "sha256": "1fe33a3fcf49302b324f7131f7067f9efa531a2fbfe929c07b824d9545640cc4",
+      "bytes": 146948
+    },
+    {
+      "relative": "global/tiles/Act2/Town/LutW.ds1",
+      "origin": "mod",
+      "sha256": "00d4864ad341c86fcfb3a38fa0a707067e727be92e36584aa2f245d515acc6c7",
+      "bytes": 146652
+    },
+    {
+      "relative": "global/tiles/Act3/Docktown/DockTown3.ds1",
+      "origin": "mod",
+      "sha256": "fbf9d2ccec17ff0c6c6ed6db4433af49898e448b7355d02b2637cb379dfec3a3",
+      "bytes": 118213
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple11.ds1",
+      "origin": "mod",
+      "sha256": "110244f79e0726694725642e7b79bc6e5b0bf4f1a66f3aa118a5217508d994d3",
+      "bytes": 20999
+    },
+    {
+      "relative": "global/tiles/Act3/Temple/Temple12.ds1",
+      "origin": "mod",
+      "sha256": "65e26b0c8fd9153b91dce39476bc5361754a0bfe2d8683807e3603f6446ba150",
+      "bytes": 16239
+    },
+    {
+      "relative": "global/tiles/Act4/Fort/Fortress.ds1",
+      "origin": "mod",
+      "sha256": "256a8acd8f4854dc8b7d912f27d1c18d4f0daccf6b6812b43be07f1e312cf0c3",
+      "bytes": 38131
+    },
+    {
+      "relative": "global/tiles/Expansion/baalLair/wstone01.ds1",
+      "origin": "mod",
+      "sha256": "bd005e73948d986d6f6a5fffa021d2e8bb7a955a789971b2c62ef89ba02f0783",
+      "bytes": 114289
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell01.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell02.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell03.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell04.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell05.ds1",
+      "origin": "mod",
+      "sha256": "4e032407f6c0740619954904cc3ee6eb6186e608146cad54983b27105efc5b55",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell06.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell07.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell08.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell09.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell10.ds1",
+      "origin": "mod",
+      "sha256": "27a3c4bc4a72fa2ba8dc961c47195eecebfcddeb7f380126ae517fa047c8d03a",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell11.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell12.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell13.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell14.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell15.ds1",
+      "origin": "mod",
+      "sha256": "4e032407f6c0740619954904cc3ee6eb6186e608146cad54983b27105efc5b55",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell16.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell17.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell18.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell19.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell20.ds1",
+      "origin": "mod",
+      "sha256": "5cf034d1a0acc5cd3487e48f79818d139a00b25f9fa0222ef1a8462653ba0a1f",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell21.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell22.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell23.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell24.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell25.ds1",
+      "origin": "mod",
+      "sha256": "4e032407f6c0740619954904cc3ee6eb6186e608146cad54983b27105efc5b55",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell26.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell27.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell28.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell29.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell30.ds1",
+      "origin": "mod",
+      "sha256": "ef5964a45ac6ce9a1153c59f093f09ecfff042c548dfaf1751265487c5a008eb",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell31.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell32.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell33.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell34.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell35.ds1",
+      "origin": "mod",
+      "sha256": "4e032407f6c0740619954904cc3ee6eb6186e608146cad54983b27105efc5b55",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell36.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell37.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell38.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell39.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell40.ds1",
+      "origin": "mod",
+      "sha256": "c49aba762f5dd21e7746072da886fecb5addea6e9c71b9fdd96949e3eca6214f",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell41.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell42.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell43.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell44.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell45.ds1",
+      "origin": "mod",
+      "sha256": "4e032407f6c0740619954904cc3ee6eb6186e608146cad54983b27105efc5b55",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell46.ds1",
+      "origin": "mod",
+      "sha256": "df2f87b3d7f3465183c5b00c0d6124ceaf34e71c56b7fc806f62a05b8c67eb2e",
+      "bytes": 19236
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell47.ds1",
+      "origin": "mod",
+      "sha256": "39817db7bb8cbbd95fbd84be9393dadc758e8b76c340ef52e612ff5f7a38b7d7",
+      "bytes": 19056
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell48.ds1",
+      "origin": "mod",
+      "sha256": "8cd5024c40c9b468c327828481a6c55a8d2f576f3e952e42cc7e10c43e54b3f8",
+      "bytes": 19116
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell49.ds1",
+      "origin": "mod",
+      "sha256": "e19a93fee645695d4011bf9a8023a861d417e2e47dddd32345bd5fc1079d39dc",
+      "bytes": 18916
+    },
+    {
+      "relative": "global/tiles/Expansion/icecave/icyhell50.ds1",
+      "origin": "mod",
+      "sha256": "2e30b73a444d5f718b437fda37ddf25322c9bf9fb26eb2b18230ebec23e4d79c",
+      "bytes": 19036
+    },
+    {
+      "relative": "global/tiles/Expansion/Town/townWest.ds1",
+      "origin": "mod",
+      "sha256": "0f670837d7c8481431bc3bf2d588024dd3cf4c23f600f6e8a3606ee1fe19b296",
+      "bytes": 76745
+    },
+    {
+      "relative": "local/lng/strings/bnet.json",
+      "origin": "mod",
+      "sha256": "ecc7a536aeb6b3db021a060ef43b94bea442f3ed8cebf098393b7d8435e01604",
+      "bytes": 76116
+    },
+    {
+      "relative": "local/lng/strings/item-gems.json",
+      "origin": "mod",
+      "sha256": "6b60626fa74c4193ad3763f807facd6a1908c0a0ba5bfeb52c1c83e1e114f210",
+      "bytes": 31327
+    },
+    {
+      "relative": "local/lng/strings/item-modifiers.json",
+      "origin": "mod",
+      "sha256": "cb4aa6f0ff85153ed4f78f6ee5982e1c55ea401c4dfa13a600dec72104ca744b",
+      "bytes": 435637
+    },
+    {
+      "relative": "local/lng/strings/item-nameaffixes.json",
+      "origin": "mod",
+      "sha256": "3405770ee674c723760c0d502ed43b542d8f1090421595a0f5871cea0fb20ab4",
+      "bytes": 468477
+    },
+    {
+      "relative": "local/lng/strings/item-names.json",
+      "origin": "mod",
+      "sha256": "a905205320ef21d391402940c2fffe39be6a0c097b8f2891e33bbb865d515401",
+      "bytes": 1178543
+    },
+    {
+      "relative": "local/lng/strings/item-runes.json",
+      "origin": "mod",
+      "sha256": "3bc3b8619dc5dacd258ee932110ca278656b894bdd1bee6d9849e9c6e322f6a2",
+      "bytes": 108793
+    },
+    {
+      "relative": "local/lng/strings/levels.json",
+      "origin": "mod",
+      "sha256": "2ddc9d1f98e586eb4810b1ff3ad4ee29d139c16ecb3f26fa7acf14c1b7458bcd",
+      "bytes": 497382
+    },
+    {
+      "relative": "local/lng/strings/monsters.json",
+      "origin": "mod",
+      "sha256": "b6d62a273aa413ce36824dbe7f2c1a4100c3b38792675679302cc0f952e40a17",
+      "bytes": 334035
+    },
+    {
+      "relative": "local/lng/strings/objects.json",
+      "origin": "mod",
+      "sha256": "bb0d74b944c1ea447d6a4cfe61c7d8473f55657bd51daee71c6e9a3209bf9d16",
+      "bytes": 95059
+    },
+    {
+      "relative": "local/lng/strings/quests.json",
+      "origin": "mod",
+      "sha256": "1d9c2277f281723c1d701b4914bde0bb5678a03b495e92a99d87bfd86e8f7011",
+      "bytes": 129170
+    },
+    {
+      "relative": "local/lng/strings/skills.json",
+      "origin": "mod",
+      "sha256": "5779cfa32fa815c89ef1d313f47392a2677654f21f5419da278db15e7bfd8c87",
+      "bytes": 2512122
+    },
+    {
+      "relative": "local/lng/strings/ui.json",
+      "origin": "mod",
+      "sha256": "6f6e4e566a92a641d240037eaa69b0b72c3e16b53e1fc879f7cd414402a49dc3",
+      "bytes": 1425785
+    },
+    {
+      "relative": "local/lng/strings/vo.json",
+      "origin": "mod",
+      "sha256": "e7edffae74326b3acc6be6bbecd1c9211c901a170f2856be8952a21fed91d837",
+      "bytes": 3186209
+    }
+  ],
+  "placementIndexSha256": "938e50b888b020727b86401a87d88d49d3ac8334ae1f74f4325730aaca9a467d",
+  "assumptions": {
+    "dropCap": 6,
+    "ruleSet": "Standard Expansion treasure-class and quality rolls, with ReMoDDeD Forsaken Pact recipe exclusions",
+    "locations": "Current levels.txt spawn pools plus the Bestiary fixed-placement index and campaign quest encounters",
+    "population": "Density-based area population with sampled elite packs, minions, current DS1 layout alternatives and verified campaign/seal/wave encounters. Procedural geometry, placement success and elite allocation remain approximations; skill summons and unbound scripts are excluded.",
+    "excluded": "Server/plugin/scripted rewards without a table binding, quest rewards outside treasure classes, affix rolls, sockets and ethereal rolls"
+  }
+}
