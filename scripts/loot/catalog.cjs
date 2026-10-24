@@ -26,6 +26,10 @@ function build(){
     const code=kind==='base'?r.code:kind==='unique'?r.code:r.item,base=s.bases.get(code);if(!base)return;
     const id=kind==='base'?'base:'+code:(kind==='unique'?'unique:':'setitem:')+(g(r,'*ID')||r._source.line),old=oldItems.get(id);
     const item={id,kind,code,key:kind==='base'?code:r.index,name:s.name(kind==='base'?(r.namestr||code):r.index,kind==='base'?r.name:r.index),baseName:s.name(base.namestr||code,base.name),category:s.category(base),type:s.itemTypes.get(base.type.toLowerCase())?.ItemType||base.type,level:num(kind==='base'?base.level:r.lvl),rarity:num(r.rarity),enabled:kind!=='unique'||r.enabled==='1',source:source(r),image:old?.image?.title||null,title:old?'$:/rmd/database/'+(kind==='base'?'bases':kind==='unique'?'uniques':'setitems')+'/'+encodeURIComponent(id):null,recipes:creations.get(kind==='base'?code:r.index)||[],recipeOnly:kind==='set'&&pacts.has(r.set),setName:kind==='set'?s.name(r.set,r.set):'',nolimit:r.nolimit==='1',ladder:r.ladder==='1'};
+    // Riddle solutions must never be shipped in the public catalog. Keep the
+    // complete creation index above for drop eligibility, but publish only
+    // ordinary recipes (including their ingredients, conditions and sources).
+    item.recipes=item.recipes.filter(recipe=>! /\briddle\b/i.test(recipe.name));
     if(!item.image)item.image=oldItems.get('base:'+code)?.image?.title||null;
     if(kind==='set')item.cowOnly=r.set==="Cow King's Leathers";
     items.push(item);return item;

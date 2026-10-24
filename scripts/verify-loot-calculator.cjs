@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
-const {Engine,noDrop,runsFor,cumulative,options}=require('./loot/engine.cjs');
+const {MAX_PLAYERS,Engine,noDrop,runsFor,cumulative,options}=require('./loot/engine.cjs');
 const comparison=require('./loot/comparison.cjs');
 const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 function close(a,b,label){assert.ok(Math.abs(a-b)<1e-11*Math.max(1,Math.abs(b)),label+': '+a+' vs '+b);}
@@ -12,7 +12,7 @@ const fixtures={items:fixtureItems,bases:{a:{level:10,normal:false,unique:false,
   fixtureTC('Half',1,[a,b]),fixtureTC('Twice',2,[a,b]),fixtureTC('Fixed',-2,[{...a,weight:2},b],100),
   fixtureTC('OtherSix',6,[b]),fixtureTC('AfterCap',-2,[tc('OtherSix'),a]),
   fixtureTC('ItemBranch',5,[b],1),fixtureTC('RuneBranch',3,[a,b]),fixtureTC('CountessFixture',-2,[tc('ItemBranch'),tc('RuneBranch')]),
-  fixtureTC('NoDrop',1,[{...a,weight:100}],100),fixtureTC('Empty',1,[]),fixtureTC('EmptyChoice',1,[tc('Empty'),a]),
+  fixtureTC('NoDrop',1,[{...a,weight:100}],100),fixtureTC('LargeParty',1,[{...a,weight:100}],900),fixtureTC('Empty',1,[]),fixtureTC('EmptyChoice',1,[tc('Empty'),a]),
   fixtureTC('Single',1,[a]),fixtureTC('ForcedUnique',1,[{kind:'item',ref:'unique:a',weight:1}]),
   fixtureTC('ForcedCowSet',1,[{kind:'item',ref:'set:cow',weight:1}]),
   fixtureTC('Inherited',1,[tc('Single')],0,[1024,0,0,0]),fixtureTC('VeryRare',1,[a,{...b,weight:1e17}]),
@@ -26,6 +26,10 @@ close(calc('EmptyChoice').chance,.5,'Empty branch consumes no item slots');
 close(calc('NoDrop').chance,.5,'P1 NoDrop');close(calc('NoDrop','base:a',{players:2}).chance,.5,'P2 equals solo P1');
 close(calc('NoDrop','base:a',{players:3}).chance,100/133,'P3 integer NoDrop');close(calc('NoDrop','base:a',{players:8}).chance,100/106,'P8 solo NoDrop');
 assert.equal(noDrop(fixtures.classes.find(t=>t.name==='NoDrop'),options({players:8,nearby:8})),0);checks++;
+assert.equal(MAX_PLAYERS,20);assert.equal(options({players:20,nearby:20}).nearby,20);assert.equal(options({players:99,nearby:99}).players,20);assert.equal(options({players:8,nearby:20}).nearby,8);checks+=4;
+close(calc('LargeParty','base:a',{players:9}).chance,100/244,'P9 solo NoDrop');
+close(calc('LargeParty','base:a',{players:20}).chance,100/153,'P20 solo NoDrop');
+close(calc('LargeParty','base:a',{players:20,nearby:20}).chance,100/113,'P20 nearby party NoDrop');
 close(calc('Single','unique:a').chance,1/400,'Unique roll at equal base/item level');
 close(calc('Single','unique:a',{mf:200}).chance,128/24265,'MF with effective-MF and integer truncation');
 close(calc('Single','set:a').chance,399/64000,'Set roll follows failed unique roll');
@@ -46,6 +50,7 @@ let state=0x734a15,success=0;function random(){state=(Math.imul(state,1664525)+1
 const trials=150000;for(let run=0;run<trials;run++){let count=0,hit=false;for(let i=0;i<5;i++)if(random()<.5)count++;for(let i=0;i<3&&count<6;i++,count++)if(random()<.5)hit=true;if(hit)success++;}
 assert.ok(Math.abs(success/trials-27/32)<.004,'Countess DP disagrees with independent simulation');checks++;
 const data=JSON.parse(read('data/loot/catalog.json')),real=new Engine(data),s=require('./items/source.cjs');
+assert.ok(data.items.every(item=>(item.recipes||[]).every(recipe=>! /\briddle\b/i.test(recipe.name))),'Riddle recipes must not be published in loot source data');checks++;
 assert.equal(data.items.filter(i=>i.kind==='base').length,[...s.bases.values()].filter(r=>r.type).length);
 for(const row of s.tables.uniqueitems.filter(r=>r.index&&r.code)){
   const item=real.items.get('unique:'+(s.get(row,'*ID')||row._source.line));assert.ok(item);assert.equal(item.code,row.code);assert.equal(item.level,Number(row.lvl||0));assert.equal(item.rarity,Number(row.rarity||0));assert.equal(item.enabled,row.enabled==='1');checks++;
@@ -127,7 +132,10 @@ for(const reference of rulesAudit.references){const bytes=fs.readFileSync(path.j
 assert.equal(data.sources.find(src=>src.id==='monster:smith').onePerGame,true);assert.deepEqual(data.spawnMonsters.fallen1.partyRange,[2,5]);checks+=4+rulesAudit.references.length;
 assert.equal(data.spawnMonsters.fallen1.min,1);assert.equal(data.spawnMonsters.hellbovine.max,10);checks+=50+data.areas.length*2;
 for(const item of data.items)if(item.image)assert.ok(wiki.has(item.image),'Missing loot sprite '+item.image);
-const before=parse(read('.tmp/before-loot-calculator/index.html')),allowed=new Set(['$:/rmd/navigation','ReMoDDeD Wiki']);
+// The mobile theme has evolved since the original loot import snapshot.
+// Check its current source instead of requiring the old embedded stylesheet.
+assert.equal(wiki.get('$:/zzz/rmd/sanctuary.css').text,read('theme/sanctuary.css'));
+const before=parse(read('.tmp/before-loot-calculator/index.html')),allowed=new Set(['$:/rmd/navigation','ReMoDDeD Wiki','$:/zzz/rmd/sanctuary.css']);
 for(const [title,t]of before)if(!allowed.has(title))assert.deepEqual(wiki.get(title),t,'Unrelated tiddler changed: '+title);
 assert.ok(wiki.get('$:/rmd/navigation').text.includes('[[Loot Calculator|Loot Calculator]]'));
 console.log('Loot calculator verified:',checks,'probability/source checks,',data.items.length,'loot entries,',data.classes.length,'tables; unrelated wiki pages preserved.');

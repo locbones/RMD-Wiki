@@ -6,6 +6,7 @@
  * ItemsMagic.cpp set selection, MonsterTbls.cpp TC compilation/upgrades.
  */
 'use strict';
+const MAX_PLAYERS=20;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),integer=n=>Math.trunc(Number(n)||0);
 function empty(cap){const t=new Float64Array(cap+1),n=new Float64Array(cap+1),h=new Float64Array(cap+1);t[0]=n[0]=1;return {t,n,h};}
 function blank(cap){return {t:new Float64Array(cap+1),n:new Float64Array(cap+1),h:new Float64Array(cap+1)};}
@@ -24,7 +25,7 @@ function compose(first,next,cap){
   return out;
 }
 function add(out,dist,weight){for(let i=0;i<out.t.length;i++){out.t[i]+=weight*dist.t[i];out.n[i]+=weight*dist.n[i];out.h[i]+=weight*dist.h[i];}}
-function options(o){o=o||{};const players=clamp(integer(o.players)||1,1,8);return {...o,players,nearby:clamp(integer(o.nearby)||1,1,players),mf:clamp(integer(o.mf),0,10000),level:clamp(integer(o.level)||85,1,255)};}
+function options(o){o=o||{};const players=clamp(integer(o.players)||1,1,MAX_PLAYERS);return {...o,players,nearby:clamp(integer(o.nearby)||1,1,players),mf:clamp(integer(o.mf),0,10000),level:clamp(integer(o.level)||85,1,255)};}
 function noDrop(row,o){if(row.picks<0||!row.noDrop)return 0;const exponent=Math.floor((o.players-o.nearby)/2)+o.nearby;if(exponent===1)return row.noDrop;const ratio=Math.pow(row.noDrop/(row.total+row.noDrop),exponent);return ratio>=1?0:Math.floor(row.total*ratio/(1-ratio));}
 function runsFor(chance,confidence){return chance<=0?Infinity:chance>=1?1:Math.max(1,Math.ceil(Math.log1p(-confidence)/Math.log1p(-chance)));}
 function cumulative(chance,runs){return chance>=1?(runs>0?1:0):chance<=0?0:-Math.expm1(Math.max(0,runs)*Math.log1p(-chance));}
@@ -125,4 +126,4 @@ Engine.prototype.paths=function(name,itemId,limit){
     for(const e of entries){if(e.kind==='tc')visit(e.ref,trail.concat({table:current,entry:e.token,weight:e.weight,total:tc.total,source:tc.source}),depth+1);else if(e.ref===itemId||e.ref===target)results.push(trail.concat({table:current,entry:e.token,weight:e.weight,total:tc.total,source:tc.source}));if(results.length>=(limit||3))break;}}
   visit(name,[],0);return results;
 };
-exports.Engine=Engine;exports.noDrop=noDrop;exports.runsFor=runsFor;exports.cumulative=cumulative;exports.options=options;
+exports.MAX_PLAYERS=MAX_PLAYERS;exports.Engine=Engine;exports.noDrop=noDrop;exports.runsFor=runsFor;exports.cumulative=cumulative;exports.options=options;

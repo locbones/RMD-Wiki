@@ -87751,24 +87751,7 @@
       },
       "image": "$:/rmd/item-sprites/06cc99bcf68fd767d024",
       "title": "$:/rmd/database/uniques/unique%3A665",
-      "recipes": [
-        {
-          "name": "Edyrem Riddle",
-          "inputs": [
-            "TK01",
-            "Gheed's Fortune",
-            "Annihilus",
-            "Hellfire Torch"
-          ],
-          "output": "Soul of Edyrem",
-          "condition": null,
-          "source": {
-            "file": "global/excel/cubemain.txt",
-            "line": 166,
-            "origin": "mod"
-          }
-        }
-      ],
+      "recipes": [],
       "recipeOnly": false,
       "setName": "",
       "nolimit": true,
