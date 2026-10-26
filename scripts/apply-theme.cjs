@@ -36,6 +36,7 @@ const fonts = [['Cinzel', 'cinzel.woff2'], ['Inter', 'inter.woff2']].map(([famil
 ).join('\n');
 put({ title: '$:/rmd/fonts', type: 'text/css', tags: '$:/tags/Stylesheet', text: fonts });
 put({ title: '$:/zzz/rmd/sanctuary.css', type: 'text/css', tags: '$:/tags/Stylesheet', text: fs.readFileSync(path.join(root, 'theme', 'sanctuary.css'), 'utf8') });
+put({ title: '$:/rmd/equipment-stats.js', type: 'application/javascript', 'module-type': 'library', text: fs.readFileSync(path.join(root, 'scripts', 'items', 'equipment.cjs'), 'utf8') });
 const settings = {
   '$:/palette': '$:/rmd/palette/Sanctuary',
   '$:/DefaultTiddlers': '[[ReMoDDeD Wiki]]',

@@ -197,6 +197,7 @@ body.tc-body [data-tiddler-title="ReMoDDeD Wiki"]:not(.tc-tiddler-edit-frame) .t
 .rmd-catalog { padding-top: 12px; min-width: 0; max-width: 100%; }
 .rmd-catalog :is(.rmd-catalog-controls,.rmd-catalog-groups,.rmd-catalog-grid,.rmd-catalog-set,.rmd-catalog-runeword,.rmd-catalog-item-header) { min-width: 0; max-width: 100%; }
 .tc-body .tc-tiddler-frame:has(.rmd-catalog) { padding-top: 18px !important; }
+body.tc-body .tc-tiddler-frame:has(.rmd-catalog-browser) { max-width: none; }
 .tc-body .tc-tiddler-frame:has(.rmd-catalog) .tc-titlebar { padding-bottom: 12px; gap: 4px; }
 .tc-body .tc-tiddler-frame:has(.rmd-catalog) .tc-titlebar h2 { font-size: clamp(22px,2.3vw,28px); }
 .tc-body .tc-tiddler-body > p:has(> .rmd-catalog) { margin: 0; }
@@ -216,9 +217,9 @@ body.tc-body [data-tiddler-title="ReMoDDeD Wiki"]:not(.tc-tiddler-edit-frame) .t
 .tc-body .rmd-catalog-filter-toggle[aria-expanded=true] { border-color: #754034; }
 .tc-body .rmd-catalog-button:disabled { opacity: .4; cursor: default; }
 .tc-body .rmd-catalog-count { margin: 8px 0 12px; color: var(--rmd-muted); font: 12px/1.5 Inter,Arial,sans-serif; scroll-margin-top: calc(var(--rmd-header) + 18px); }
-.rmd-catalog-grid { display: block; columns: 300px 2; column-gap: 12px; }
-.rmd-catalog-grid:has(> .rmd-catalog-card:only-child) { columns: auto 1; }
-.rmd-catalog-card { display: inline-block; width: 100%; min-width: 0; margin: 0 0 12px; padding: 12px; break-inside: avoid; border: 1px solid var(--rmd-line); background: #191110; }
+.rmd-catalog-grid,.rmd-catalog-runeword-grid { display: block; columns: 360px var(--rmd-catalog-columns,2); column-gap: 12px; }
+.rmd-catalog-card { display: inline-block; position: relative; container-type: inline-size; width: 100%; min-width: 0; margin: 0 0 12px; padding: 12px; break-inside: avoid; border: 1px solid var(--rmd-line); background: #191110; }
+.rmd-catalog-runeword-grid > .rmd-catalog-runeword { display: inline-block; container-type: inline-size; width: 100%; break-inside: avoid; vertical-align: top; }
 .rmd-catalog-item-header { display: flex; gap: 8px; align-items: start; justify-content: space-between; }
 .tc-body .rmd-catalog-item-header h3 { margin: 0; font: 600 18px/1.3 Inter,Arial,sans-serif; color: #eee4d1; overflow-wrap: anywhere; }
 .tc-body .rmd-catalog-uniques .rmd-catalog-item-header h3 { color: #cbb87e; }
@@ -230,10 +231,26 @@ body.tc-body [data-tiddler-title="ReMoDDeD Wiki"]:not(.tc-tiddler-edit-frame) .t
 .rmd-catalog-identity { min-width: 0; padding: 4px 0; text-align: center; }
 .tc-body .rmd-catalog-image { display: block; max-width: 100%; max-height: 100px; width: auto; height: auto; margin: 0 auto; object-fit: contain; }
 .rmd-catalog-stats { min-width: 0; font: 13px/1.5 Inter,Arial,sans-serif; }
-.rmd-catalog-base-stats { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 10px; margin: 0; font: 12px/1.5 Inter,Arial,sans-serif; }
+.rmd-catalog-base-stats { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: baseline; gap: 2px 10px; margin: 0; font: 12px/1.5 Inter,Arial,sans-serif; }
 .rmd-catalog-base-stats dt { color: var(--rmd-muted); font-weight: 400; }
 .rmd-catalog-base-stats :is(dt,dd) { min-width: 0; overflow-wrap: anywhere; }
+.tc-body .rmd-catalog-base-stats :is(dt,dd) { margin: 0; padding: 0; font: inherit; }
 .rmd-catalog-base-stats dd { margin: 0; color: #eee4d1; text-align: right; }
+.rmd-catalog-equipment { position: relative; min-width: 0; margin-bottom: 12px; }
+.rmd-catalog-equipment .rmd-catalog-base-stats { grid-template-columns: fit-content(55%) minmax(0,max-content); justify-content: start; column-gap: 12px; }
+.rmd-catalog-equipment .rmd-catalog-base-stats dd { text-align: left; }
+.rmd-catalog-equipment .rmd-catalog-base-stats dd.rmd-catalog-stat-altered { color: #a6a6ff; }
+.tc-body .rmd-catalog .rmd-catalog-stat-value { all: unset; display: inline; font: inherit; line-height: inherit; color: inherit; vertical-align: baseline; cursor: help; }
+.tc-body .rmd-catalog .rmd-catalog-stat-value:focus-visible { outline: 1px solid var(--rmd-gold); outline-offset: 3px; }
+.rmd-catalog-stat-tooltip { position: absolute; z-index: 10; left: 0; width: min(420px,100%); padding: 12px; border: 1px solid #95674b; background: #100b0b; box-shadow: 0 6px 20px #0009; color: #eee4d1; font: 12px/1.6 Inter,Arial,sans-serif; text-align: left; white-space: normal; overflow-wrap: anywhere; overflow: auto; }
+.rmd-catalog-stat-tooltip[hidden] { display: none; }
+.rmd-catalog-stat-tooltip-heading { display: block; color: var(--rmd-gold); margin-bottom: 7px; }
+.rmd-catalog-stat-tooltip-math { display: block; white-space: pre-line; }
+.rmd-catalog-card:has(.rmd-catalog-stat-tooltip:not([hidden])),.rmd-catalog-runeword:has(.rmd-catalog-stat-tooltip:not([hidden])) { position: relative; z-index: 5; }
+.tc-body .rmd-catalog-calculation-note { margin: 6px 0 0; font: 11px/1.5 Inter,Arial,sans-serif; color: var(--rmd-muted); overflow-wrap: anywhere; }
+.rmd-catalog-scaling-fields { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0 8px; }
+.rmd-catalog-scaling-fields label { flex: 1 1 110px; min-width: 0; color: var(--rmd-muted); font: 12px/1.5 Inter,Arial,sans-serif; }
+.tc-body .rmd-catalog-scaling-fields input { display: block; width: 100%; min-width: 0; min-height: 44px; padding: 8px; margin: 4px 0 0; background: #100b0b; color: var(--rmd-text); border: 1px solid var(--rmd-line); font-size: 16px; }
 .tc-body .rmd-catalog-mods { margin: 0; padding: 0 0 0 14px; color: #a6a6ff; overflow-wrap: anywhere; line-height: 1.5; }
 .tc-body .rmd-catalog-mods li { margin: 2px 0; line-height: 1.5; }
 .tc-body .rmd-catalog-subheading { margin: 10px 0 5px; font: 500 12px/1.5 Inter,Arial,sans-serif; color: var(--rmd-gold); }
@@ -260,9 +277,27 @@ body.tc-body [data-tiddler-title="ReMoDDeD Wiki"]:not(.tc-tiddler-edit-frame) .t
 .rmd-catalog-example-label { color: var(--rmd-gold); font-size: 11px; }
 .tc-body .rmd-catalog-example-base .rmd-catalog-meta { margin: 0; font-size: 11px; }
 .rmd-catalog-pagination { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; }
+/* Narrow cards can occur on a wide screen when readers select more columns. */
+@container (max-width: 420px) {
+  .rmd-catalog-item-header { display: block; }
+  .tc-body .rmd-catalog-item-header h3 { font-size: 17px; line-height: 1.35; }
+  .rmd-catalog-tier { display: inline-block; max-width: 100%; margin-top: 3px; white-space: normal; overflow-wrap: anywhere; }
+  .rmd-catalog-card:has(.rmd-catalog-image) > .rmd-catalog-item-header,
+  .tc-body .rmd-catalog-card:has(.rmd-catalog-image) > .rmd-catalog-meta { padding-left: 60px; }
+  .tc-body .rmd-catalog-card:has(.rmd-catalog-image) > .rmd-catalog-meta { min-height: 38px; }
+  .rmd-catalog-item-body { display: block; }
+  .rmd-catalog-item-body > .rmd-catalog-identity { display: none; }
+  .rmd-catalog-item-body > .rmd-catalog-identity:has(img) { display: flex; align-items: flex-start; justify-content: center; position: absolute; top: 12px; left: 12px; width: 48px; height: 80px; padding: 0; }
+  .tc-body .rmd-catalog-identity .rmd-catalog-image { max-height: 80px; }
+  .rmd-catalog-base-stats { grid-template-columns: minmax(0,1fr) fit-content(40%); }
+  .rmd-catalog-runeword-body { display: block; }
+  .tc-body .rmd-catalog-example-base { display: grid; grid-template-columns: 44px minmax(0,1fr); align-items: center; gap: 10px; padding: 4px 0 10px; }
+  .rmd-catalog-example-base figcaption { margin: 0; text-align: left; }
+  .rmd-catalog-example-base .rmd-catalog-image { max-height: 64px; }
+}
 @media (max-width: 650px) {
-  .rmd-catalog-grid { display: grid; grid-template-columns: minmax(0,1fr); columns: auto; gap: 12px; }
-  .rmd-catalog-grid > .rmd-catalog-card { display: block; margin-bottom: 0; }
+  .rmd-catalog-grid,.rmd-catalog-runeword-grid { display: grid; grid-template-columns: minmax(0,1fr); columns: auto; gap: 12px; }
+  .rmd-catalog-grid > .rmd-catalog-card,.rmd-catalog-runeword-grid > .rmd-catalog-runeword { display: block; margin-bottom: 0; }
   .rmd-catalog-card { position: relative; }
   .rmd-catalog-item-header { display: block; }
   .tc-body .rmd-catalog-item-header h3 { font-size: 17px; line-height: 1.35; }

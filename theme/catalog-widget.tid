@@ -5,6 +5,7 @@ module-type: widget
 (function () {
   'use strict';
   var Widget = require('$:/core/modules/widgets/widget.js').widget;
+  var equipment = require('$:/rmd/equipment-stats.js');
   function element(doc,tag,classes,text) {
     var node=doc.createElement(tag);
     if(classes)node.setAttribute('class',classes);
@@ -18,6 +19,7 @@ module-type: widget
     this.dataTitle='$:/rmd/item-data/'+this.kind;
     this.records=this.wiki.getTiddlerData(this.dataTitle,{records:[]}).records||[];
     this.definitions=this.wiki.getTiddlerData('$:/rmd/item-data/definitions',{autoAffixes:{},properties:{},stats:{}});
+    this.baseRecords=new Map((this.wiki.getTiddlerData('$:/rmd/item-data/bases',{records:[]}).records||[]).map(function(r){return [r.code,r];}));
   };
   Catalog.prototype.image=function (record,parent) {
     var image=record.image&&this.wiki.getTiddler(record.image.title);
@@ -39,8 +41,39 @@ module-type: widget
   };
   Catalog.prototype.baseStats=function (stats,parent) {
     var list=element(this.document,'dl','rmd-catalog-base-stats');
-    stats.forEach(function(stat){list.appendChild(element(this.document,'dt','',stat.label));list.appendChild(element(this.document,'dd','',stat.value));},this);
+    stats.forEach(function(stat){
+      var label=element(this.document,'dt','',stat.label),value=element(this.document,'dd',stat.altered?'rmd-catalog-stat-altered':'');
+      if(stat.calculation)this.calculatedValue(stat,label,value);
+      else value.appendChild(this.document.createTextNode(stat.value));
+      list.appendChild(label);list.appendChild(value);
+    },this);
     parent.appendChild(list);
+  };
+  Catalog.prototype.calculatedValue=function(stat,label,value) {
+    var self=this,button=element(this.document,'button','rmd-catalog-stat-value',stat.value),tooltip=element(this.document,'span','rmd-catalog-stat-tooltip'),timer;
+    var id='rmd-stat-calculation-'+(++Catalog.statId);
+    button.type='button';button.setAttribute('aria-label',stat.label+': '+stat.value+'. Show calculation');button.setAttribute('aria-describedby',id);button.setAttribute('aria-expanded','false');
+    tooltip.id=id;tooltip.setAttribute('role','tooltip');tooltip.hidden=true;
+    tooltip.appendChild(element(this.document,'strong','rmd-catalog-stat-tooltip-heading',stat.label));
+    tooltip.appendChild(element(this.document,'span','rmd-catalog-stat-tooltip-math',stat.calculation));
+    value.appendChild(button);value.appendChild(tooltip);
+    function hide(){clearTimeout(timer);tooltip.hidden=true;button.setAttribute('aria-expanded','false');if(self.hideStatTooltip===hide)self.hideStatTooltip=null;}
+    function show(){
+      if(self.hideStatTooltip&&self.hideStatTooltip!==hide)self.hideStatTooltip();self.hideStatTooltip=hide;
+      clearTimeout(timer);tooltip.hidden=false;button.setAttribute('aria-expanded','true');
+      var preview=value.closest('.rmd-catalog-equipment'),anchor=button.getBoundingClientRect(),bounds=preview.getBoundingClientRect();
+      var header=self.document.querySelector('.rmd-masthead'),safeTop=Math.max(12,header?header.getBoundingClientRect().bottom+8:12);
+      tooltip.style.maxHeight=Math.max(100,Math.min(420,window.innerHeight-safeTop-20))+'px';
+      var height=tooltip.getBoundingClientRect().height,top=anchor.bottom+6;
+      if(top+height>window.innerHeight-12)top=anchor.top-height-6;
+      top=Math.max(safeTop,Math.min(top,window.innerHeight-height-12));
+      tooltip.style.top=(top-bounds.top)+'px';
+    }
+    function later(){clearTimeout(timer);timer=setTimeout(function(){if(self.document.activeElement!==button&&!tooltip.matches(':hover'))hide();},120);}
+    label.addEventListener('mouseenter',show);label.addEventListener('mouseleave',later);
+    button.addEventListener('mouseenter',show);button.addEventListener('mouseleave',later);button.addEventListener('focus',show);button.addEventListener('blur',later);button.addEventListener('click',show);
+    button.addEventListener('keydown',function(event){if(event.key==='Escape'){hide();event.preventDefault();event.stopPropagation();}});
+    tooltip.addEventListener('mouseenter',function(){clearTimeout(timer);});tooltip.addEventListener('mouseleave',later);
   };
   Catalog.prototype.partialBonuses=function (bonuses,parent,label) {
     if(!bonuses||!bonuses.length)return;
@@ -48,6 +81,45 @@ module-type: widget
     details.appendChild(element(this.document,'summary','',label));
     bonuses.forEach(function(bonus){this.properties(bonus.properties,details,bonus.label);},this);
     parent.appendChild(details);
+  };
+  Catalog.prototype.equipmentPreview=function (record,parent,variant) {
+    var base=this.baseRecords.get(variant?variant.exampleBase?.code:record.code);
+    if(!base||variant&&!variant.exampleBase.compatible)return;
+    var properties=(variant?variant.properties:record.properties||[]).map(function(p){return Object.assign({},p,{calculationSource:record.name});});
+    if(variant) {
+      var socketContext=base.category==='weapon'?'Weapons':/shield|heads/i.test(base.itemType)?'Shields':'Armor / helm';
+      variant.runes.forEach(function(rune){(rune.socketBonuses||[]).filter(function(b){return b.context===socketContext;}).forEach(function(b){properties=properties.concat(b.properties.map(function(p){return Object.assign({},p,{calculationSource:rune.name});}));});});
+    }
+    var context={quality:variant?'runeword':record.kind,level:Math.max(1,Number(variant?variant.requiredRuneLevel:record.requiredLevel)||1,Number(base.requiredLevel)||1),strength:0,dexterity:0,energy:0,vitality:0};
+    var initial=equipment.calculate(base,properties,this.definitions,context);if(!initial.stats.length)return;
+    var self=this,preview=element(this.document,'section','rmd-catalog-equipment');
+    preview.appendChild(element(this.document,'h4','rmd-catalog-subheading',variant?'Example item stats':'Item stats'));
+    var output=element(this.document,'div','');preview.appendChild(output);
+    function draw(){
+      while(output.firstChild)output.removeChild(output.firstChild);
+      var calculated=equipment.calculate(base,properties,self.definitions,context);
+      self.baseStats(calculated.stats,output);
+      var assumptions=['Lowest–highest rolls',calculated.ethereal?'Ethereal':'Non-ethereal'];
+      if(variant)assumptions.push(base.name+' normal base','Includes socketed rune bonuses');
+      if(variant?.forging.length)assumptions.push('Before runic forging');
+      if(variant?.runic)assumptions.push('Random jewel affixes excluded');
+      if(record.kind==='setitems')assumptions.push('Without conditional set bonuses');
+      if(calculated.dependencies.length)assumptions.push(calculated.dependencies.map(function(key){return (key==='level'?'Level':key.charAt(0).toUpperCase()+key.slice(1))+' '+context[key];}).join(' · '));
+      output.appendChild(element(self.document,'p','rmd-catalog-calculation-note',assumptions.join(' · ')));
+      calculated.notes.forEach(function(note){output.appendChild(element(self.document,'p','rmd-catalog-calculation-note',note));});
+    }
+    draw();
+    if(initial.dependencies.length) {
+      var settings=element(this.document,'details','rmd-catalog-inherent');settings.appendChild(element(this.document,'summary','','Adjust character scaling'));
+      var fields=element(this.document,'div','rmd-catalog-scaling-fields');
+      initial.dependencies.forEach(function(key){
+        var label=element(self.document,'label','',key==='level'?'Character level':key.charAt(0).toUpperCase()+key.slice(1)),input=element(self.document,'input','');
+        input.type='number';input.min=key==='level'?'1':'0';input.max=key==='level'?'255':'10000';input.step='1';input.value=String(context[key]);input.setAttribute('inputmode','numeric');
+        input.addEventListener('input',function(){context[key]=Math.max(Number(input.min),Math.min(Number(input.max),Math.trunc(Number(input.value)||Number(input.min))));draw();});
+        input.addEventListener('change',function(){input.value=String(context[key]);});label.appendChild(input);fields.appendChild(label);
+      });settings.appendChild(fields);preview.appendChild(settings);
+    }
+    parent.appendChild(preview);
   };
   Catalog.prototype.source=function (record,parent) {
     var details=element(this.document,'details','rmd-catalog-source');
@@ -76,6 +148,7 @@ module-type: widget
     var body=element(this.document,'div','rmd-catalog-item-body');
     var identity=element(this.document,'div','rmd-catalog-identity');this.image(record,identity);body.appendChild(identity);
     var stats=element(this.document,'div','rmd-catalog-stats');
+    if(record.kind!=='bases')this.equipmentPreview(record,stats);
     if(record.kind==='bases'&&record.baseStats&&record.baseStats.length) {
       var primary=record.baseStats.filter(function(stat){return /damage$|defense$|requirement$|^Sockets|^Socket capacity/i.test(stat.label)&&!/^Strength damage bonus/.test(stat.label);});
       if(record.baseStats.length<=5)primary=record.baseStats.slice();
@@ -148,6 +221,7 @@ module-type: widget
       }
       var bonuses=element(this.document,'div','rmd-catalog-stats');
       if(variant.exampleBase&&!variant.exampleBase.compatible)bonuses.appendChild(element(this.document,'p','rmd-catalog-status','The source lists '+variant.sockets+' sockets, but this base type supports up to '+variant.exampleBase.socketCapacity+'.'));
+      this.equipmentPreview(record,bonuses,variant);
       this.properties(variant.properties,bonuses,'Runeword bonuses');
       body.appendChild(bonuses);details.appendChild(body);
       var socket=element(this.document,'details','rmd-catalog-inherent');
@@ -181,6 +255,13 @@ module-type: widget
     parent.insertBefore(root,nextSibling);this.domNodes.push(root);
     var ids=this.getAttribute('ids','');
     if(ids) {this.includeDisabled=true;this.records.filter(function(r){return ids.split('|').indexOf(r.id)!==-1;}).forEach(function(r){this.drawRecord(r,root);},this);return;}
+    root.classList.add('rmd-catalog-browser');
+    var columnsKey='rmd-catalog-columns-'+this.kind;
+    if(this.columns==null) {
+      try {this.columns=$tw.browser?window.localStorage.getItem(columnsKey):'auto';} catch(e) {this.columns='auto';}
+    }
+    if(!/^(auto|[1-8])$/.test(this.columns||''))this.columns='auto';
+    root.style.setProperty('--rmd-catalog-columns',this.columns);
     this.query=this.query||'';this.category=this.category||'all';this.tier=this.tier||'';this.page=0;this.includeDisabled=this.includeDisabled||false;this.sort=this.sort||'name';
     var self=this, controls=element(this.document,'div','rmd-catalog-controls');
     var searchRow=element(this.document,'div','rmd-catalog-search-row');
@@ -195,16 +276,21 @@ module-type: widget
     var controlsId='rmd-catalog-filters-'+(++Catalog.controlId);
     form.hidden=!open;form.setAttribute('id',controlsId);toggle.setAttribute('aria-controls',controlsId);
     toggle.addEventListener('click',function(){form.hidden=!form.hidden;toggle.setAttribute('aria-expanded',String(!form.hidden));});
-    function select(label,options,value,change) {
+    function select(label,options,value,change,layoutOnly) {
       var wrapper=element(self.document,'label','',label),node=element(self.document,'select','');
       options.forEach(function(option){var entry=element(self.document,'option','',option[1]);entry.setAttribute('value',option[0]);node.appendChild(entry);});
-      node.value=value;node.addEventListener('change',function(){change(node.value);self.page=0;self.update();});wrapper.appendChild(node);form.appendChild(wrapper);
+      node.value=value;node.addEventListener('change',function(){change(node.value);if(!layoutOnly){self.page=0;self.update();}});wrapper.appendChild(node);form.appendChild(wrapper);return node;
     }
     if(this.kind==='bases'||this.kind==='uniques')select('Category',[['all','All categories'],['weapon','Weapons'],['armor','Armor'],['jewellery','Jewelry'],['charm','Charms'],['misc','Miscellaneous']],this.category,function(value){self.category=value;});
     if(this.kind!=='runewords')select('Tier',[['','All tiers'],['I','Normal'],['II','Exceptional'],['III','Elite'],this.kind==='sets'?['F','Forsaken Pacts']:['L','Limit Break']],this.tier,function(value){self.tier=value;});
     var sorts=[['name','Name'],['requiredLevel',this.kind==='runewords'?'Minimum rune level':'Required level']];
     if(this.kind!=='runewords')sorts.push(['level','Quality level']);
     select('Sort',sorts,this.sort,function(value){self.sort=value;});
+    var columnOptions=[['auto','Auto']];for(var column=1;column<=8;column++)columnOptions.push([String(column),String(column)]);
+    select('Columns',columnOptions,this.columns,function(value){
+      self.columns=value;root.style.setProperty('--rmd-catalog-columns',value);
+      try {if($tw.browser)window.localStorage.setItem(columnsKey,value);} catch(e) { /* The current view still works when storage is unavailable. */ }
+    },true).setAttribute('title','Maximum columns; fewer are used when needed to keep cards readable. Saved for this database in this browser.');
     if(this.kind!=='bases') {
       var label=element(this.document,'label','rmd-catalog-checkbox');var checkbox=element(this.document,'input','');checkbox.setAttribute('type','checkbox');checkbox.checked=this.includeDisabled;
       checkbox.addEventListener('change',function(){self.includeDisabled=checkbox.checked;self.page=0;self.update();});label.appendChild(checkbox);label.appendChild(this.document.createTextNode('Include disabled'));form.appendChild(label);
@@ -212,7 +298,7 @@ module-type: widget
     var reset=element(this.document,'button','rmd-catalog-button','Reset');reset.setAttribute('type','button');reset.addEventListener('click',function(){self.query='';self.category='all';self.tier='';self.sort='name';self.includeDisabled=false;self.refreshSelf();});form.appendChild(reset);
     controls.appendChild(form);root.appendChild(controls);
     this.count=element(this.document,'p','rmd-catalog-count');this.count.setAttribute('aria-live','polite');root.appendChild(this.count);
-    this.results=element(this.document,'div',this.kind==='sets'||this.kind==='runewords'?'rmd-catalog-groups':'rmd-catalog-grid');root.appendChild(this.results);
+    this.results=element(this.document,'div',this.kind==='runewords'?'rmd-catalog-groups rmd-catalog-runeword-grid':this.kind==='sets'?'rmd-catalog-groups':'rmd-catalog-grid');root.appendChild(this.results);
     this.pager=element(this.document,'nav','rmd-catalog-pagination');this.pager.setAttribute('aria-label','Item database pages');root.appendChild(this.pager);
     var timer;search.addEventListener('input',function(){clearTimeout(timer);self.query=search.value;self.page=0;timer=setTimeout(function(){self.update();},120);});
     this.update();
@@ -240,10 +326,11 @@ module-type: widget
   };
   Catalog.prototype.refresh=function(changedTiddlers) {
     var attributes=this.computeAttributes();
-    if(attributes.kind||attributes.ids||changedTiddlers[this.dataTitle]){this.refreshSelf();return true;}
+    if(attributes.kind||attributes.ids||changedTiddlers[this.dataTitle]||changedTiddlers['$:/rmd/item-data/bases']||changedTiddlers['$:/rmd/item-data/definitions']){this.refreshSelf();return true;}
     return false;
   };
   Catalog.controlId=0;
+  Catalog.statId=0;
   exports['rmd-catalog']=Catalog;
   exports['rmd-item']=Catalog;
 })();
